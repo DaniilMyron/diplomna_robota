@@ -27,13 +27,35 @@ public class TaskService {
 
   @Transactional
   public TaskResponse createForMember(UUID teamId, String email, String title, String description, UUID assigneeId) {
-    if (!teamMemberRepository.existsByTeamIdAndUserEmail(teamId, email)) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Team not accessible");
-    }
+    requireMember(teamId, email);
 
     var team = teamRepository.findById(teamId).orElseThrow();
     UserEntity assignee = assigneeId == null ? null : resolveAssignee(teamId, assigneeId);
     return TaskResponse.from(taskRepository.save(new TaskEntity(title, description, team, assignee)));
+  }
+
+  @Transactional
+  public TaskResponse updateForMember(UUID teamId, UUID taskId, String email, String title, String description, UUID assigneeId, TaskStatus status) {
+    requireMember(teamId, email);
+    var task = taskRepository.findByIdAndTeamId(taskId, teamId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+    UserEntity assignee = assigneeId == null ? null : resolveAssignee(teamId, assigneeId);
+    task.update(title, description, assignee, status);
+    return TaskResponse.from(task);
+  }
+
+  @Transactional
+  public void deleteForMember(UUID teamId, UUID taskId, String email) {
+    requireMember(teamId, email);
+    var task = taskRepository.findByIdAndTeamId(taskId, teamId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+    taskRepository.delete(task);
+  }
+
+  private void requireMember(UUID teamId, String email) {
+    if (!teamMemberRepository.existsByTeamIdAndUserEmail(teamId, email)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Team not accessible");
+    }
   }
 
   private UserEntity resolveAssignee(UUID teamId, UUID assigneeId) {

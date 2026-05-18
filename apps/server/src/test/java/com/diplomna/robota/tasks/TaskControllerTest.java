@@ -1,5 +1,7 @@
 package com.diplomna.robota.tasks;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -77,6 +79,77 @@ class TaskControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"title\":\"Reject outsider\",\"assigneeId\":\"" + outsider.getId() + "\"}"))
       .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void teamMemberCanEditTaskDetailsAndStatus() throws Exception {
+    var creator = saveUser("editor@example.com", "editor", "Editor");
+    var assignee = saveUser("editor-assignee@example.com", "editor-assignee", "Editor Assignee");
+    var team = saveTeam("Platform", creator);
+    teamMemberRepository.save(new TeamMemberEntity(team, assignee, "MEMBER"));
+    String token = jwtService.createToken(creator.getEmail());
+
+    String taskJson = mockMvc.perform(post("/api/teams/" + team.getId() + "/tasks")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"title\":\"Draft details\"}"))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+    String taskId = taskJson.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+
+    mockMvc.perform(patch("/api/teams/" + team.getId() + "/tasks/" + taskId)
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"title\":\"Ship details\",\"description\":\"Ready to review\",\"assigneeId\":\"" + assignee.getId() + "\",\"status\":\"IN_PROGRESS\"}"))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.title").value("Ship details"))
+      .andExpect(jsonPath("$.description").value("Ready to review"))
+      .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
+      .andExpect(jsonPath("$.assignee.id").value(assignee.getId().toString()));
+  }
+
+  @Test
+  void editedTaskAssigneeMustBelongToSameTeam() throws Exception {
+    var creator = saveUser("update-owner@example.com", "update-owner", "Update Owner");
+    var outsider = saveUser("update-outsider@example.com", "update-outsider", "Update Outsider");
+    var team = saveTeam("Platform", creator);
+    String token = jwtService.createToken(creator.getEmail());
+
+    String taskJson = mockMvc.perform(post("/api/teams/" + team.getId() + "/tasks")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"title\":\"Keep local\"}"))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+    String taskId = taskJson.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+
+    mockMvc.perform(patch("/api/teams/" + team.getId() + "/tasks/" + taskId)
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"title\":\"Keep local\",\"assigneeId\":\"" + outsider.getId() + "\",\"status\":\"TODO\"}"))
+      .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void teamMemberCanDeleteTask() throws Exception {
+    var member = saveUser("delete-member@example.com", "delete-member", "Delete Member");
+    var team = saveTeam("Platform", member);
+    String token = jwtService.createToken(member.getEmail());
+
+    String taskJson = mockMvc.perform(post("/api/teams/" + team.getId() + "/tasks")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"title\":\"Obsolete task\"}"))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+    String taskId = taskJson.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+
+    mockMvc.perform(delete("/api/teams/" + team.getId() + "/tasks/" + taskId)
+        .header("Authorization", "Bearer " + token))
+      .andExpect(status().isNoContent());
   }
 
   private UserEntity saveUser(String email, String username, String displayName) {

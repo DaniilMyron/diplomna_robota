@@ -2,11 +2,13 @@
 
 ## Purpose
 
-Owns task creation for a team's Board.
+Owns task creation and task detail lifecycle for a team's Board.
 
 ## Public surface
 
 - `POST /api/teams/{teamId}/tasks`
+- `PATCH /api/teams/{teamId}/tasks/{taskId}`
+- `DELETE /api/teams/{teamId}/tasks/{taskId}`
 
 ## Owns
 

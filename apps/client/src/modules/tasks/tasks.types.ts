@@ -18,3 +18,10 @@ export type CreateTaskInput = {
   description?: string;
   assigneeId?: string;
 };
+
+export type UpdateTaskInput = {
+  title: string;
+  description?: string;
+  assigneeId?: string;
+  status: TaskStatus;
+};
