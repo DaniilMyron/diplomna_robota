@@ -7,7 +7,7 @@ There is one HTTP transport in the client. Every network call goes through it. M
 `apps/client/src/modules/shared/http/` is the only place that calls `fetch` (or any equivalent). It owns:
 
 - the `fetch` call,
-- attaching the auth header (mechanism TBD — see the auth placeholder in `/CLAUDE.md`),
+- attaching the auth header (mechanism TBD - see the auth placeholder in `/CODEX.md`),
 - 401 retry-once-with-fresh-credentials,
 - session-expired notification,
 - mapping HTTP/network/parse failures into a typed `HttpError` union.
