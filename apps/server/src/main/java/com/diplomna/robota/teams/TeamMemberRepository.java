@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TeamMemberRepository extends JpaRepository<TeamMemberEntity, UUID> {
   boolean existsByTeamIdAndUserEmail(UUID teamId, String email);
+  boolean existsByTeamIdAndUserId(UUID teamId, UUID userId);
 }

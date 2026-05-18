@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/modules/auth';
+import { createTask } from '@/modules/tasks';
+import type { Task } from '@/modules/tasks';
 import { getBoardTeam } from '../../api/board-api';
 import type { BoardTeam } from '../../board.types';
 
@@ -8,6 +10,10 @@ export function useTeamBoardPage() {
   const { token } = useAuth();
   const { teamId = '' } = useParams();
   const [team, setTeam] = useState<BoardTeam | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [assigneeId, setAssigneeId] = useState('');
 
   useEffect(() => {
     if (!token || !teamId) {
@@ -17,5 +23,29 @@ export function useTeamBoardPage() {
     void getBoardTeam(token, teamId).then(setTeam);
   }, [teamId, token]);
 
-  return { team };
+  return {
+    team,
+    tasks,
+    title,
+    description,
+    assigneeId,
+    setTitle,
+    setDescription,
+    setAssigneeId,
+    create: async () => {
+      if (!token || !teamId || !title.trim()) {
+        return;
+      }
+
+      const task = await createTask(token, teamId, {
+        title: title.trim(),
+        ...(description.trim() ? { description: description.trim() } : {}),
+        ...(assigneeId.trim() ? { assigneeId: assigneeId.trim() } : {}),
+      });
+      setTasks((current) => [...current, task]);
+      setTitle('');
+      setDescription('');
+      setAssigneeId('');
+    },
+  };
 }

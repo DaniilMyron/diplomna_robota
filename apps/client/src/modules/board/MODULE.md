@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Owns the primary Team Board page and its empty-state rendering.
+Owns the primary Team Board page, task placement by status, and its empty-state rendering.
 
 ## Public surface
 
@@ -12,8 +12,10 @@ Owns the primary Team Board page and its empty-state rendering.
 
 - Calls to `/api/teams/{teamId}`
 - Team Board route composition
+- Task-focused Board integration
 
 ## Depends on
 
 - Auth module for the bearer token
 - Shared HTTP transport
+- Tasks module for task creation
