@@ -89,6 +89,26 @@
   padding: 10px 12px;
 }
 
+.inputError {
+  border-color: #ef4444;
+  outline-color: #ef4444;
+  background: #fff7f7;
+}
+
+.fieldError,
+.fieldNotice {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.fieldError {
+  color: var(--danger);
+}
+
+.fieldNotice {
+  color: #047857;
+}
+
 .primaryButton,
 .secondaryButton,
 .dangerButton {
@@ -141,9 +161,11 @@
 }
 
 .card {
+  position: relative;
   display: grid;
   gap: 12px;
   padding: 16px;
+  padding-right: 56px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--background);
@@ -157,6 +179,30 @@
 .assignee {
   margin: 0;
   color: var(--text-muted);
+}
+
+.avatar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .actions {

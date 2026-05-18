@@ -54,9 +54,7 @@ public class TeamService {
       throw new TeamAccessDeniedException();
     }
 
-    var user = lookup.startsWith("@")
-      ? userRepository.findByUsername(lookup.substring(1)).orElseThrow(TeamMemberNotFoundException::new)
-      : userRepository.findByEmail(lookup).orElseThrow(TeamMemberNotFoundException::new);
+    var user = userRepository.findByUsername(lookup).orElseThrow(TeamMemberNotFoundException::new);
 
     if (!teamMemberRepository.existsByTeamIdAndUserId(teamId, user.getId())) {
       teamMemberRepository.save(new TeamMemberEntity(team, user, "MEMBER"));

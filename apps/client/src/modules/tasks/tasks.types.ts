@@ -2,7 +2,9 @@ export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
 
 export type TaskAssignee = {
   id: string;
+  username: string;
   displayName: string;
+  avatarUrl: string;
 };
 
 export type Task = {

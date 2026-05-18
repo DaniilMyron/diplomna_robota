@@ -24,6 +24,10 @@ public class AuthService {
 
   @Transactional
   public AuthResponse register(RegisterRequest request) {
+    if (userRepository.existsByUsername(request.username())) {
+      throw new UserAlreadyExistsException();
+    }
+
     UserEntity user = userRepository.save(new UserEntity(
       request.email(),
       request.username(),

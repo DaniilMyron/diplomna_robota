@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/modules/auth';
+import { HttpError } from '@/modules/shared/http/http-client';
 import { createTask, deleteTask, updateTask, updateTaskStatus } from '@/modules/tasks';
 import type { Task, TaskStatus } from '@/modules/tasks';
 import { addBoardTeamMember, getBoardTeam } from '../../api/board-api';
-import type { BoardTeam } from '../../board.types';
+import type { BoardTeam, BoardTeamMember } from '../../board.types';
 
 export function useTeamBoardPage() {
   const { token } = useAuth();
@@ -14,7 +15,10 @@ export function useTeamBoardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [assigneeId, setAssigneeId] = useState('');
+  const [assigneeLookup, setAssigneeLookupState] = useState('');
+  const [memberLookupError, setMemberLookupError] = useState<string | null>(null);
+  const [memberNotice, setMemberNotice] = useState<string | null>(null);
+  const [assigneeError, setAssigneeError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token || !teamId) {
@@ -27,35 +31,63 @@ export function useTeamBoardPage() {
   return {
     team,
     memberLookup,
-    setMemberLookup,
+    setMemberLookup(value: string) {
+      setMemberLookup(value);
+      setMemberLookupError(null);
+      setMemberNotice(null);
+    },
+    memberLookupError,
+    memberNotice,
     async addMember() {
-      if (!token || !teamId || !memberLookup.trim()) {
+      const username = memberLookup.trim();
+      if (!token || !teamId || !username) {
         return;
       }
-      const updatedTeam = await addBoardTeamMember(token, teamId, memberLookup.trim());
-      setTeam(updatedTeam);
-      setMemberLookup('');
+      try {
+        const updatedTeam = await addBoardTeamMember(token, teamId, username);
+        setTeam(updatedTeam);
+        setMemberLookup('');
+        setMemberLookupError(null);
+        setMemberNotice(`User ${username} has been added.`);
+      } catch (error) {
+        if (error instanceof HttpError && error.code === 'TEAM_MEMBER_NOT_FOUND') {
+          setMemberLookupError('User with this username was not found.');
+          return;
+        }
+        throw error;
+      }
     },
     tasks,
     title,
     description,
-    assigneeId,
+    assigneeLookup,
+    assigneeError,
+    assigneeOptions: filterMembers(team?.members ?? [], assigneeLookup),
     setTitle,
     setDescription,
-    setAssigneeId,
+    setAssigneeLookup(value: string) {
+      setAssigneeLookupState(value);
+      setAssigneeError(null);
+    },
     async create() {
       if (!token || !teamId || !title.trim()) {
+        return;
+      }
+      const assignee = resolveMember(team?.members ?? [], assigneeLookup);
+      if (assigneeLookup.trim() && !assignee) {
+        setAssigneeError('User does not exist.');
         return;
       }
       const task = await createTask(token, teamId, {
         title: title.trim(),
         ...(description.trim() ? { description: description.trim() } : {}),
-        ...(assigneeId.trim() ? { assigneeId: assigneeId.trim() } : {}),
+        ...(assignee ? { assigneeId: assignee.id } : {}),
       });
       setTasks((current) => [...current, task]);
       setTitle('');
       setDescription('');
-      setAssigneeId('');
+      setAssigneeLookupState('');
+      setAssigneeError(null);
     },
     async update(taskId: string, input: { title: string; description?: string; assigneeId?: string; status: TaskStatus }) {
       if (!token || !teamId) {
@@ -79,4 +111,28 @@ export function useTeamBoardPage() {
       setTasks((current) => current.filter((task) => task.id !== taskId));
     },
   };
+}
+
+export function filterMembers(members: BoardTeamMember[], lookup: string) {
+  const normalizedLookup = lookup.trim().toLowerCase();
+  if (!normalizedLookup) {
+    return members;
+  }
+
+  return members.filter((member) =>
+    member.username.toLowerCase().includes(normalizedLookup)
+    || member.displayName.toLowerCase().includes(normalizedLookup),
+  );
+}
+
+export function resolveMember(members: BoardTeamMember[], lookup: string) {
+  const normalizedLookup = lookup.trim().toLowerCase();
+  if (!normalizedLookup) {
+    return null;
+  }
+
+  return members.find((member) =>
+    member.username.toLowerCase() === normalizedLookup
+    || member.displayName.toLowerCase() === normalizedLookup,
+  ) ?? null;
 }

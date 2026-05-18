@@ -68,9 +68,8 @@ class TeamControllerTest {
   }
 
   @Test
-  void ownerCanAddExistingMembersByEmailAndUsername() throws Exception {
+  void ownerCanAddExistingMembersByUsername() throws Exception {
     var owner = userRepository.save(new UserEntity("owner-add@example.com", "owner-add", "Owner", "/avatars/default.png", passwordEncoder.encode("secret123")));
-    userRepository.save(new UserEntity("email-member@example.com", "email-member", "Email Member", "/avatars/default.png", passwordEncoder.encode("secret123")));
     userRepository.save(new UserEntity("username-member@example.com", "username-member", "Username Member", "/avatars/default.png", passwordEncoder.encode("secret123")));
     String token = jwtService.createToken(owner.getEmail());
     String teamId = createTeam(token);
@@ -78,16 +77,9 @@ class TeamControllerTest {
     mockMvc.perform(post("/api/teams/" + teamId + "/members")
         .header("Authorization", "Bearer " + token)
         .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"lookup\":\"email-member@example.com\"}"))
+        .content("{\"lookup\":\"username-member\"}"))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.members[1].email").value("email-member@example.com"));
-
-    mockMvc.perform(post("/api/teams/" + teamId + "/members")
-        .header("Authorization", "Bearer " + token)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"lookup\":\"@username-member\"}"))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.members[2].username").value("username-member"));
+      .andExpect(jsonPath("$.members[1].username").value("username-member"));
   }
 
   @Test
@@ -103,13 +95,13 @@ class TeamControllerTest {
     mockMvc.perform(post("/api/teams/" + teamId + "/members")
         .header("Authorization", "Bearer " + ownerToken)
         .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"lookup\":\"member-auth@example.com\"}"))
+        .content("{\"lookup\":\"member-auth\"}"))
       .andExpect(status().isOk());
 
     mockMvc.perform(post("/api/teams/" + teamId + "/members")
         .header("Authorization", "Bearer " + memberToken)
         .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"lookup\":\"outsider-auth@example.com\"}"))
+        .content("{\"lookup\":\"outsider-auth\"}"))
       .andExpect(status().isForbidden());
 
     mockMvc.perform(get("/api/teams/" + teamId).header("Authorization", "Bearer " + outsiderToken))
@@ -125,7 +117,7 @@ class TeamControllerTest {
     mockMvc.perform(post("/api/teams/" + teamId + "/members")
         .header("Authorization", "Bearer " + token)
         .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"lookup\":\"missing@example.com\"}"))
+        .content("{\"lookup\":\"missing\"}"))
       .andExpect(status().isNotFound());
   }
 

@@ -54,7 +54,11 @@ class AuthControllerTest {
     mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
       .andExpect(status().isOk());
 
-    mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+    String duplicateUsernameBody = """
+      {"email":"duplicate-username@example.com","username":"duplicate","displayName":"Duplicate Other","password":"secret123"}
+      """;
+
+    mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(duplicateUsernameBody))
       .andExpect(status().isConflict())
       .andExpect(jsonPath("$.code").value("AUTH_USER_ALREADY_EXISTS"));
   }

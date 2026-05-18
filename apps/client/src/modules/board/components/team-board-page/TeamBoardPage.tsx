@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+import type { BoardTeamMember } from '../../board.types';
 import type { Task, TaskStatus } from '@/modules/tasks';
-import { useTeamBoardPage } from './use-team-board-page';
+import { filterMembers, resolveMember, useTeamBoardPage } from './use-team-board-page';
 import styles from './TeamBoardPage.module.css';
 
 const taskStatuses: Array<{ status: TaskStatus; label: string }> = [
@@ -37,11 +38,14 @@ export function TeamBoardPage() {
                 <label className={styles.field}>
                   Add member
                   <input
-                    className={styles.input}
+                    className={`${styles.input} ${model.memberLookupError ? styles.inputError : ''}`}
                     aria-label="Add member"
+                    aria-invalid={Boolean(model.memberLookupError)}
                     value={model.memberLookup}
                     onChange={(event) => model.setMemberLookup(event.target.value)}
                   />
+                  {model.memberLookupError ? <span className={styles.fieldError}>{model.memberLookupError}</span> : null}
+                  {model.memberNotice ? <span className={styles.fieldNotice}>{model.memberNotice}</span> : null}
                 </label>
                 <button className={styles.secondaryButton} onClick={() => void model.addMember()}>Add member</button>
               </div>
@@ -60,8 +64,17 @@ export function TeamBoardPage() {
               <input className={styles.input} aria-label="Description" value={model.description} onChange={(event) => model.setDescription(event.target.value)} />
             </label>
             <label className={styles.field}>
-              Assignee ID
-              <input className={styles.input} aria-label="Assignee ID" value={model.assigneeId} onChange={(event) => model.setAssigneeId(event.target.value)} />
+              Assignee
+              <input
+                className={`${styles.input} ${model.assigneeError ? styles.inputError : ''}`}
+                aria-label="Assignee"
+                aria-invalid={Boolean(model.assigneeError)}
+                list="create-task-assignees"
+                value={model.assigneeLookup}
+                onChange={(event) => model.setAssigneeLookup(event.target.value)}
+              />
+              <AssigneeOptions id="create-task-assignees" members={model.assigneeOptions} />
+              {model.assigneeError ? <span className={styles.fieldError}>{model.assigneeError}</span> : null}
             </label>
             <button className={styles.primaryButton} onClick={() => void model.create()}>Create task</button>
           </div>
@@ -95,18 +108,20 @@ function TaskColumn({
       onDrop={(event) => void model.moveTask(event.dataTransfer.getData('text/task-id'), status)}
     >
       <h2 className={styles.columnHeading}>{label}</h2>
-      {tasks.length === 0 ? <p className={styles.emptyColumn}>No tasks in {label}.</p> : tasks.map((task) => <TaskCard key={task.id} task={task} onUpdate={model.update} onDelete={model.remove} onMove={model.moveTask} />)}
+      {tasks.length === 0 ? <p className={styles.emptyColumn}>No tasks in {label}.</p> : tasks.map((task) => <TaskCard key={task.id} task={task} members={model.team?.members ?? []} onUpdate={model.update} onDelete={model.remove} onMove={model.moveTask} />)}
     </section>
   );
 }
 
 function TaskCard({
   task,
+  members,
   onUpdate,
   onDelete,
   onMove,
 }: {
   task: Task;
+  members: BoardTeamMember[];
   onUpdate: (taskId: string, input: { title: string; description?: string; assigneeId?: string; status: TaskStatus }) => Promise<void>;
   onDelete: (taskId: string) => Promise<void>;
   onMove: (taskId: string, status: TaskStatus) => Promise<void>;
@@ -114,18 +129,38 @@ function TaskCard({
   const [isEditing, setIsEditing] = React.useState(false);
   const [title, setTitle] = React.useState(task.title);
   const [description, setDescription] = React.useState(task.description ?? '');
-  const [assigneeId, setAssigneeId] = React.useState(task.assignee?.id ?? '');
+  const [assigneeLookup, setAssigneeLookup] = React.useState(task.assignee?.username ?? '');
+  const [assigneeError, setAssigneeError] = React.useState<string | null>(null);
   const [status, setStatus] = React.useState(task.status);
+  const assigneeOptions = filterMembers(members, assigneeLookup);
 
   React.useEffect(() => {
     setTitle(task.title);
     setDescription(task.description ?? '');
-    setAssigneeId(task.assignee?.id ?? '');
+    setAssigneeLookup(task.assignee?.username ?? '');
+    setAssigneeError(null);
     setStatus(task.status);
   }, [task]);
 
+  const saveTask = async () => {
+    const assignee = resolveMember(members, assigneeLookup);
+    if (assigneeLookup.trim() && !assignee) {
+      setAssigneeError('User does not exist.');
+      return;
+    }
+
+    await onUpdate(task.id, {
+      title: title.trim(),
+      ...(description.trim() ? { description: description.trim() } : {}),
+      ...(assignee ? { assigneeId: assignee.id } : {}),
+      status,
+    });
+    setIsEditing(false);
+  };
+
   return (
     <article className={styles.card} draggable onDragStart={(event) => event.dataTransfer.setData('text/task-id', task.id)}>
+      <AssigneeAvatar assignee={task.assignee} />
       <strong className={styles.cardTitle}>{task.title}</strong>
       {task.assignee ? <p className={styles.assignee}>{task.assignee.displayName}</p> : null}
       <div className={styles.actions}>
@@ -148,8 +183,20 @@ function TaskCard({
             <input className={styles.input} aria-label="Edit description" value={description} onChange={(event) => setDescription(event.target.value)} />
           </label>
           <label className={styles.field}>
-            Edit assignee ID
-            <input className={styles.input} aria-label="Edit assignee ID" value={assigneeId} onChange={(event) => setAssigneeId(event.target.value)} />
+            Edit assignee
+            <input
+              className={`${styles.input} ${assigneeError ? styles.inputError : ''}`}
+              aria-label="Edit assignee"
+              aria-invalid={Boolean(assigneeError)}
+              list={`edit-task-assignees-${task.id}`}
+              value={assigneeLookup}
+              onChange={(event) => {
+                setAssigneeLookup(event.target.value);
+                setAssigneeError(null);
+              }}
+            />
+            <AssigneeOptions id={`edit-task-assignees-${task.id}`} members={assigneeOptions} />
+            {assigneeError ? <span className={styles.fieldError}>{assigneeError}</span> : null}
           </label>
           <label className={styles.field}>
             Edit status
@@ -159,17 +206,34 @@ function TaskCard({
               ))}
             </select>
           </label>
-          <button className={styles.primaryButton} onClick={() => void onUpdate(task.id, {
-            title: title.trim(),
-            ...(description.trim() ? { description: description.trim() } : {}),
-            ...(assigneeId.trim() ? { assigneeId: assigneeId.trim() } : {}),
-            status,
-          }).then(() => setIsEditing(false))}>Save task</button>
+          <button className={styles.primaryButton} onClick={() => void saveTask()}>Save task</button>
         </div>
       ) : (
         <button className={styles.secondaryButton} aria-label={`Edit ${task.title}`} onClick={() => setIsEditing(true)}>Edit</button>
       )}
       <button className={styles.dangerButton} onClick={() => void onDelete(task.id)}>Delete task</button>
     </article>
+  );
+}
+
+function AssigneeOptions({ id, members }: { id: string; members: BoardTeamMember[] }) {
+  return (
+    <datalist id={id}>
+      {members.map((member) => (
+        <option key={member.id} value={member.username} label={member.displayName} />
+      ))}
+    </datalist>
+  );
+}
+
+function AssigneeAvatar({ assignee }: { assignee: Task['assignee'] }) {
+  if (!assignee) {
+    return <span className={styles.avatar} aria-label="Unassigned">?</span>;
+  }
+
+  return (
+    <span className={styles.avatar} title={`${assignee.displayName} (@${assignee.username})`}>
+      {assignee.avatarUrl ? <img src={assignee.avatarUrl} alt="" /> : assignee.displayName.slice(0, 1).toUpperCase()}
+    </span>
   );
 }

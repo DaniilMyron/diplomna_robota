@@ -19,6 +19,11 @@ public class AuthExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("AUTH_USER_ALREADY_EXISTS"));
   }
 
+  @ExceptionHandler(UserAlreadyExistsException.class)
+  ResponseEntity<ErrorResponse> userAlreadyExists() {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("AUTH_USER_ALREADY_EXISTS"));
+  }
+
   @ExceptionHandler(InvalidCredentialsException.class)
   ResponseEntity<ErrorResponse> invalidCredentials() {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("AUTH_INVALID_CREDENTIALS"));

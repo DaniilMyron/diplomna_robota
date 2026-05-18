@@ -13,9 +13,9 @@ public final class TaskDtos {
   public record UpdateTaskRequest(@NotBlank String title, String description, UUID assigneeId, @NotNull TaskStatus status) {}
   public record UpdateTaskStatusRequest(@NotNull TaskStatus status) {}
 
-  public record AssigneeResponse(UUID id, String displayName) {
+  public record AssigneeResponse(UUID id, String username, String displayName, String avatarUrl) {
     static AssigneeResponse from(UserEntity assignee) {
-      return new AssigneeResponse(assignee.getId(), assignee.getDisplayName());
+      return new AssigneeResponse(assignee.getId(), assignee.getUsername(), assignee.getDisplayName(), assignee.getAvatarUrl());
     }
   }
 

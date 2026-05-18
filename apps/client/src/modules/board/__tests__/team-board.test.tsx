@@ -64,9 +64,10 @@ test('a team owner can add a member inline from the board', async () => {
 
   renderBoard();
   expect(await screen.findByText('Owner')).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText('Add member'), { target: { value: '@member' } });
+  fireEvent.change(screen.getByLabelText('Add member'), { target: { value: 'member' } });
   fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
   expect(await screen.findByText('Member')).toBeInTheDocument();
+  expect(screen.getByText('User member has been added.')).toBeInTheDocument();
 });
 
 test('a team member can create a todo task and see its compact card', async () => {
@@ -75,7 +76,12 @@ test('a team member can create a todo task and see its compact card', async () =
     vi.fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ id: 'team-1', name: 'Platform', members: [], canManageMembership: false }),
+          json: async () => ({
+            id: 'team-1',
+            name: 'Platform',
+            canManageMembership: false,
+            members: [{ id: 'user-1', email: 'iryna@example.com', username: 'iryna', displayName: 'Iryna', avatarUrl: '/avatars/default.png' }],
+          }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -84,7 +90,7 @@ test('a team member can create a todo task and see its compact card', async () =
           title: 'Ship board cards',
           description: 'Keep them compact',
           status: 'TODO',
-          assignee: { id: 'user-1', displayName: 'Iryna' },
+          assignee: { id: 'user-1', username: 'iryna', displayName: 'Iryna', avatarUrl: '/avatars/default.png' },
         }),
       }),
   );
@@ -93,11 +99,11 @@ test('a team member can create a todo task and see its compact card', async () =
   await screen.findByText('Platform Board');
   fireEvent.change(screen.getByLabelText('Task title'), { target: { value: 'Ship board cards' } });
   fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'Keep them compact' } });
-  fireEvent.change(screen.getByLabelText('Assignee ID'), { target: { value: 'user-1' } });
+  fireEvent.change(screen.getByLabelText('Assignee'), { target: { value: 'iryna' } });
   fireEvent.click(screen.getByRole('button', { name: 'Create task' }));
 
   expect(await screen.findByText('Ship board cards')).toBeInTheDocument();
-  expect(screen.getByText('Iryna')).toBeInTheDocument();
+  expect(screen.getAllByText('Iryna').length).toBeGreaterThan(0);
   expect(screen.queryByText('No tasks in Todo.')).not.toBeInTheDocument();
   await waitFor(() =>
     expect(fetch).toHaveBeenLastCalledWith(
@@ -120,7 +126,12 @@ test('a team member can edit task details from the board and see the persisted c
     vi.fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ id: 'team-1', name: 'Platform', members: [], canManageMembership: false }),
+          json: async () => ({
+            id: 'team-1',
+            name: 'Platform',
+            canManageMembership: false,
+            members: [{ id: 'user-2', email: 'maksym@example.com', username: 'maksym', displayName: 'Maksym', avatarUrl: '/avatars/default.png' }],
+          }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -139,7 +150,7 @@ test('a team member can edit task details from the board and see the persisted c
           title: 'Ready card',
           description: 'Reviewed',
           status: 'IN_PROGRESS',
-          assignee: { id: 'user-2', displayName: 'Maksym' },
+          assignee: { id: 'user-2', username: 'maksym', displayName: 'Maksym', avatarUrl: '/avatars/default.png' },
         }),
       }),
   );
@@ -152,12 +163,12 @@ test('a team member can edit task details from the board and see the persisted c
 
   fireEvent.change(screen.getByLabelText('Edit title'), { target: { value: 'Ready card' } });
   fireEvent.change(screen.getByLabelText('Edit description'), { target: { value: 'Reviewed' } });
-  fireEvent.change(screen.getByLabelText('Edit assignee ID'), { target: { value: 'user-2' } });
+  fireEvent.change(screen.getByLabelText('Edit assignee'), { target: { value: 'maksym' } });
   fireEvent.change(screen.getByLabelText('Edit status'), { target: { value: 'IN_PROGRESS' } });
   fireEvent.click(screen.getByRole('button', { name: 'Save task' }));
 
   expect(await screen.findByText('Ready card')).toBeInTheDocument();
-  expect(screen.getByText('Maksym')).toBeInTheDocument();
+  expect(screen.getAllByText('Maksym').length).toBeGreaterThan(0);
   expect(screen.queryByText('No tasks in In Progress.')).not.toBeInTheDocument();
   await waitFor(() =>
     expect(fetch).toHaveBeenLastCalledWith(

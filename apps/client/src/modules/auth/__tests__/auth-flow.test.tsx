@@ -56,10 +56,38 @@ test('registration highlights invalid fields before sending a request', async ()
 
   expect(await screen.findByText('Enter a valid email')).toBeInTheDocument();
   expect(screen.getByLabelText('Email')).toHaveAttribute('aria-invalid', 'true');
-  expect(screen.getByText('Username is required')).toBeInTheDocument();
-  expect(screen.getByText('Display name is required')).toBeInTheDocument();
-  expect(screen.getByText('Password is required')).toBeInTheDocument();
+  expect(screen.getByText('Username must be at least 3 characters')).toBeInTheDocument();
+  expect(screen.getByText('Display name must be at least 2 characters')).toBeInTheDocument();
+  expect(screen.getByText('Password must be at least 8 characters')).toBeInTheDocument();
   expect(fetch).not.toHaveBeenCalled();
+});
+
+test('registration marks a duplicate username inline', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok: false,
+      status: 409,
+      json: async () => ({ code: 'AUTH_USER_ALREADY_EXISTS' }),
+    }),
+  );
+
+  render(
+    <MemoryRouter>
+      <AuthProvider>
+        <AuthPage />
+      </AuthProvider>
+    </MemoryRouter>,
+  );
+
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'user@example.com' } });
+  fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'dmyrosh' } });
+  fireEvent.change(screen.getByLabelText('Display Name'), { target: { value: 'Dmytro' } });
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+
+  expect(await screen.findByText('Username is already taken')).toBeInTheDocument();
+  expect(screen.getByLabelText('Username')).toHaveAttribute('aria-invalid', 'true');
 });
 
 test('registration shows a form error when the server rejects the request', async () => {
