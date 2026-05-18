@@ -83,6 +83,20 @@ class TeamControllerTest {
   }
 
   @Test
+  void addMemberReturnsConflictWhenUserIsAlreadyInTeam() throws Exception {
+    var owner = userRepository.save(new UserEntity("owner-duplicate@example.com", "owner-duplicate", "Owner", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    String token = jwtService.createToken(owner.getEmail());
+    String teamId = createTeam(token);
+
+    mockMvc.perform(post("/api/teams/" + teamId + "/members")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"lookup\":\"owner-duplicate\"}"))
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.code").value("TEAM_MEMBER_ALREADY_EXISTS"));
+  }
+
+  @Test
   void nonOwnersCannotManageMembershipAndNonMembersCannotOpenBoard() throws Exception {
     var owner = userRepository.save(new UserEntity("owner-auth@example.com", "owner-auth", "Owner", "/avatars/default.png", passwordEncoder.encode("secret123")));
     var member = userRepository.save(new UserEntity("member-auth@example.com", "member-auth", "Member", "/avatars/default.png", passwordEncoder.encode("secret123")));

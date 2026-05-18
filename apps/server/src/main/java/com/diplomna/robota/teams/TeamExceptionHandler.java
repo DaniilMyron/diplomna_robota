@@ -17,5 +17,10 @@ public class TeamExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("TEAM_MEMBER_NOT_FOUND"));
   }
 
+  @ExceptionHandler(TeamMemberAlreadyExistsException.class)
+  ResponseEntity<ErrorResponse> memberAlreadyExists() {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("TEAM_MEMBER_ALREADY_EXISTS"));
+  }
+
   private record ErrorResponse(String code) {}
 }

@@ -60,6 +60,10 @@ export function useTeamBoardPage() {
           setMemberLookupError('User with this username was not found.');
           return;
         }
+        if (error instanceof HttpError && error.code === 'TEAM_MEMBER_ALREADY_EXISTS') {
+          setMemberLookupError('User is already added to this team.');
+          return;
+        }
         throw error;
       }
     },

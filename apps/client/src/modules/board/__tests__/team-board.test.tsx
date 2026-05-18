@@ -79,6 +79,40 @@ test('a team owner can add a member inline from the board', async () => {
   expect(screen.getByText('User member has been added.')).toBeInTheDocument();
 });
 
+test('adding an existing team member shows an inline error', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'team-1',
+          name: 'Platform',
+          canManageMembership: true,
+          members: [{ id: 'user-1', email: 'owner@example.com', username: 'owner', displayName: 'Owner', avatarUrl: '/avatars/default.png' }],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        json: async () => ({ code: 'TEAM_MEMBER_ALREADY_EXISTS' }),
+      }),
+  );
+
+  renderBoard();
+  expect(await screen.findByText('Owner')).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Add member'), { target: { value: 'owner' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
+
+  expect(await screen.findByText('User is already added to this team.')).toBeInTheDocument();
+  expect(screen.getByLabelText('Add member')).toHaveAttribute('aria-invalid', 'true');
+});
+
+
 test('a team member can create a todo task and see its compact card', async () => {
   vi.stubGlobal(
     'fetch',
@@ -227,7 +261,7 @@ test('a team member can delete an obsolete task from the board', async () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => undefined,
+        status: 204,
       }),
   );
 

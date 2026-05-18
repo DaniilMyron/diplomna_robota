@@ -56,9 +56,11 @@ public class TeamService {
 
     var user = userRepository.findByUsername(lookup).orElseThrow(TeamMemberNotFoundException::new);
 
-    if (!teamMemberRepository.existsByTeamIdAndUserId(teamId, user.getId())) {
-      teamMemberRepository.save(new TeamMemberEntity(team, user, "MEMBER"));
+    if (teamMemberRepository.existsByTeamIdAndUserId(teamId, user.getId())) {
+      throw new TeamMemberAlreadyExistsException();
     }
+
+    teamMemberRepository.save(new TeamMemberEntity(team, user, "MEMBER"));
 
     return TeamResponse.from(team, teamMemberRepository.findAllByTeamIdOrderByCreatedAtAsc(teamId), true);
   }
