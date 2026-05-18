@@ -35,9 +35,10 @@ public class AuthService {
   }
 
   public AuthResponse login(LoginRequest request) {
-    UserEntity user = userRepository.findByEmail(request.email()).orElseThrow();
+    UserEntity user = userRepository.findByEmail(request.email())
+      .orElseThrow(InvalidCredentialsException::new);
     if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-      throw new IllegalArgumentException("Invalid credentials");
+      throw new InvalidCredentialsException();
     }
     return new AuthResponse(jwtService.createToken(user.getEmail()), UserResponseDto.from(user));
   }

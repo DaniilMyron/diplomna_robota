@@ -33,4 +33,40 @@ class AuthControllerTest {
     mockMvc.perform(get("/api/users/me"))
       .andExpect(status().isForbidden());
   }
+
+  @Test
+  void invalidRegistrationReturnsBadRequest() throws Exception {
+    String body = """
+      {"email":"not-an-email","username":"","displayName":"","password":""}
+      """;
+
+    mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.code").value("AUTH_INVALID_REQUEST"));
+  }
+
+  @Test
+  void duplicateRegistrationReturnsConflict() throws Exception {
+    String body = """
+      {"email":"duplicate@example.com","username":"duplicate","displayName":"Duplicate","password":"secret123"}
+      """;
+
+    mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+      .andExpect(status().isOk());
+
+    mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.code").value("AUTH_USER_ALREADY_EXISTS"));
+  }
+
+  @Test
+  void loginWithUnknownEmailReturnsUnauthorized() throws Exception {
+    String body = """
+      {"email":"missing@example.com","password":"secret123"}
+      """;
+
+    mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
+      .andExpect(status().isUnauthorized())
+      .andExpect(jsonPath("$.code").value("AUTH_INVALID_CREDENTIALS"));
+  }
 }

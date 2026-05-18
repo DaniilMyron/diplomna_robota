@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { expect, test, vi } from 'vitest';
 import { AppShell } from './AppShell';
@@ -50,4 +50,58 @@ test('an authenticated user sees accessible boards grouped by team and can navig
   expect(screen.getByRole('heading', { name: 'Design' })).toBeInTheDocument();
   fireEvent.click(screen.getByRole('link', { name: 'Platform Board' }));
   expect(screen.getByText('/teams/team-1/board')).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Platform Board' })).not.toBeInTheDocument();
+});
+
+test('the boards menu closes when the user clicks outside it', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [{ id: 'team-1', name: 'Platform' }],
+    }),
+  );
+
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<CurrentPath />} />
+        </Route>
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  fireEvent.click(screen.getByRole('button', { name: 'Boards' }));
+  expect(await screen.findByRole('link', { name: 'Platform Board' })).toBeInTheDocument();
+
+  fireEvent.mouseDown(document.body);
+
+  await waitFor(() => expect(screen.queryByRole('link', { name: 'Platform Board' })).not.toBeInTheDocument());
+});
+
+test('the boards menu refreshes when teams change elsewhere in the shell', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => [{ id: 'team-1', name: 'Platform' }] }),
+  );
+
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<CurrentPath />} />
+        </Route>
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  fireEvent.click(screen.getByRole('button', { name: 'Boards' }));
+  expect(await screen.findByText('Create a team to unlock its board.')).toBeInTheDocument();
+
+  window.dispatchEvent(new Event('teams:changed'));
+
+  expect(await screen.findByRole('link', { name: 'Platform Board' })).toBeInTheDocument();
 });

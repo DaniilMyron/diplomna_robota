@@ -22,9 +22,17 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
+echo "Checking Docker..."
+if ! docker info >/dev/null 2>&1; then
+  echo "docker is installed but the Docker daemon is not reachable" >&2
+  exit 1
+fi
+
 if docker ps -a --format '{{.Names}}' | grep -qx "${DB_CONTAINER}"; then
+  echo "Starting existing PostgreSQL container..."
   docker start "${DB_CONTAINER}" >/dev/null
 else
+  echo "Creating PostgreSQL container..."
   docker run -d \
     --name "${DB_CONTAINER}" \
     -e POSTGRES_DB="${DB_NAME}" \

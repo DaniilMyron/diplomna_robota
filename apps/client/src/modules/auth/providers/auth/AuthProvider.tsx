@@ -3,9 +3,12 @@ import { login as loginRequest, register as registerRequest } from '../../api/au
 import type { LoginInput, RegisterInput, User } from '../../auth.types';
 import { AuthContext } from './auth.context';
 
+const STORAGE_KEY = 'team-task-manager-auth';
+
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [session, setSession] = useState(() => readStoredSession());
+  const user = session?.user ?? null;
+  const token = session?.token ?? null;
 
   const value = useMemo(
     () => ({
@@ -13,21 +16,48 @@ export function AuthProvider({ children }: PropsWithChildren) {
       token,
       register: async (input: RegisterInput) => {
         const response = await registerRequest(input);
-        setUser(response.user);
-        setToken(response.token);
+        storeSession(response);
+        setSession(response);
       },
       login: async (input: LoginInput) => {
         const response = await loginRequest(input);
-        setUser(response.user);
-        setToken(response.token);
+        storeSession(response);
+        setSession(response);
       },
       logout: () => {
-        setUser(null);
-        setToken(null);
+        localStorage.removeItem(STORAGE_KEY);
+        setSession(null);
       },
     }),
     [token, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+type StoredSession = {
+  token: string;
+  user: User;
+};
+
+function readStoredSession(): StoredSession | null {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as StoredSession;
+    if (parsed.token && parsed.user) {
+      return parsed;
+    }
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  return null;
+}
+
+function storeSession(session: StoredSession) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
 }

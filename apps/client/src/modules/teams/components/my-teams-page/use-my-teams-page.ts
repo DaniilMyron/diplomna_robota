@@ -27,6 +27,7 @@ export function useMyTeamsPage() {
 
       const team = await createTeam(token, name.trim());
       setTeams((current) => [...current, team]);
+      window.dispatchEvent(new Event('teams:changed'));
       setName('');
     },
   };

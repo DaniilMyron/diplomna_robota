@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { expect, test, vi } from 'vitest';
-import { AuthProvider } from '../providers/auth';
+import { AuthProvider, useAuth } from '../providers/auth';
+import { RequireAuth } from '../RequireAuth';
 import { AuthPage } from '../pages/AuthPage';
 
 test('a visitor can register and reach an authenticated shell state', async () => {
@@ -86,3 +87,45 @@ test('registration shows a form error when the server rejects the request', asyn
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Registration failed. Check your details and try again.');
 });
+
+test('a returning user stays authenticated after a page reload', async () => {
+  localStorage.setItem(
+    'team-task-manager-auth',
+    JSON.stringify({
+      token: 'jwt-token',
+      user: {
+        id: 'user-1',
+        email: 'user@example.com',
+        username: 'dmyrosh',
+        displayName: 'Dmytro',
+        avatarUrl: '/avatar.png',
+      },
+    }),
+  );
+
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <AuthProvider>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <AuthenticatedState />
+              </RequireAuth>
+            }
+          />
+          <Route path="/auth" element={<p>Auth page</p>} />
+        </Routes>
+      </AuthProvider>
+    </MemoryRouter>,
+  );
+
+  expect(screen.getByText('Dmytro')).toBeInTheDocument();
+});
+
+function AuthenticatedState() {
+  const { user } = useAuth();
+
+  return <p>{user?.displayName}</p>;
+}
