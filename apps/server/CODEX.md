@@ -4,7 +4,7 @@
 
 ## Auth: every endpoint is authenticated
 
-> **Auth mechanism: TBD.** Define the auth provider/token scheme here and in `docs/adr/` when chosen.
+Authentication uses email/password login with JWT bearer tokens. See `/docs/adr/0003-jwt-auth-for-mvp.md`.
 
 Every endpoint is authenticated by default through Spring Security. When adding a new endpoint:
 

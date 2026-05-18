@@ -37,7 +37,7 @@ Domain terms are defined in `CONTEXT.md`. Use them as written. If you find yours
 
 ## Auth contract (cross-cutting)
 
-> **Auth mechanism: TBD.** Define the auth provider/token scheme here and in `docs/adr/` when chosen. The structural rules below hold regardless of mechanism.
+The client and server use email/password authentication with JWT bearer tokens for API access. See `docs/adr/0003-jwt-auth-for-mvp.md`.
 
 The client and server share a single auth contract:
 

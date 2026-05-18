@@ -10,7 +10,7 @@ This is the canonical stack for `apps/client/`.
 - **Build / dev server:** Vite with `@vitejs/plugin-react` and `vite-tsconfig-paths`.
 - **Language:** TypeScript in strict mode.
 - **Routing:** `react-router-dom`.
-- **Auth:** TBD. Pick an auth provider/session scheme and document it here and in `docs/adr/`.
+- **Auth:** Email/password login with JWT bearer tokens.
 - **Validation / schemas:** Zod.
 - **Errors as values:** `neverthrow` for expected recoverable failures.
 - **Styling:** CSS Modules by default; runtime-dependent styles in `*.styles.ts`.
