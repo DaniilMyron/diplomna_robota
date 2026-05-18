@@ -8,4 +8,5 @@ public interface TeamMemberRepository extends JpaRepository<TeamMemberEntity, UU
   boolean existsByTeamIdAndUserEmail(UUID teamId, String email);
   boolean existsByTeamIdAndUserId(UUID teamId, UUID userId);
   List<TeamMemberEntity> findAllByTeamIdOrderByCreatedAtAsc(UUID teamId);
+  List<TeamMemberEntity> findAllByUserEmail(String email);
 }

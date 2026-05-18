@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Owns team creation, owner membership bootstrap, team listing, board detail membership data, and inline membership management.
+Owns team creation, owner membership bootstrap, accessible team listing, board detail membership data, and inline membership management.
 
 ## Public surface
 

@@ -20,8 +20,13 @@ public class TeamService {
   }
 
   public List<TeamResponse> listFor(String email) {
-    return teamRepository.findAllByOwnerEmail(email).stream()
-      .map(team -> TeamResponse.from(team, teamMemberRepository.findAllByTeamIdOrderByCreatedAtAsc(team.getId()), true))
+    return teamMemberRepository.findAllByUserEmail(email).stream()
+      .map(TeamMemberEntity::getTeam)
+      .map(team -> TeamResponse.from(
+        team,
+        teamMemberRepository.findAllByTeamIdOrderByCreatedAtAsc(team.getId()),
+        team.getOwner().getEmail().equals(email)
+      ))
       .toList();
   }
 

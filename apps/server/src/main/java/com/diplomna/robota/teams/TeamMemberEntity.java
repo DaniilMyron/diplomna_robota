@@ -29,4 +29,7 @@ public class TeamMemberEntity extends BaseEntity {
   }
 
   public UserEntity getUser() { return user; }
+  public TeamEntity getTeam() {
+    return team;
+  }
 }
