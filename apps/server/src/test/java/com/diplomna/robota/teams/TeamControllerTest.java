@@ -56,10 +56,86 @@ class TeamControllerTest {
       .getResponse()
       .getContentAsString();
 
-    String teamId = response.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+    String teamId = response.replaceAll("^\\{\"id\":\"([^\"]+)\".*", "$1");
 
     mockMvc.perform(get("/api/teams/" + teamId).header("Authorization", "Bearer " + token))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.name").value("Platform"));
+      .andExpect(jsonPath("$.name").value("Platform"))
+      .andExpect(jsonPath("$.members[0].email").value("member@example.com"))
+      .andExpect(jsonPath("$.canManageMembership").value(true));
+  }
+
+  @Test
+  void ownerCanAddExistingMembersByEmailAndUsername() throws Exception {
+    var owner = userRepository.save(new UserEntity("owner-add@example.com", "owner-add", "Owner", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    userRepository.save(new UserEntity("email-member@example.com", "email-member", "Email Member", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    userRepository.save(new UserEntity("username-member@example.com", "username-member", "Username Member", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    String token = jwtService.createToken(owner.getEmail());
+    String teamId = createTeam(token);
+
+    mockMvc.perform(post("/api/teams/" + teamId + "/members")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"lookup\":\"email-member@example.com\"}"))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.members[1].email").value("email-member@example.com"));
+
+    mockMvc.perform(post("/api/teams/" + teamId + "/members")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"lookup\":\"@username-member\"}"))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.members[2].username").value("username-member"));
+  }
+
+  @Test
+  void nonOwnersCannotManageMembershipAndNonMembersCannotOpenBoard() throws Exception {
+    var owner = userRepository.save(new UserEntity("owner-auth@example.com", "owner-auth", "Owner", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    var member = userRepository.save(new UserEntity("member-auth@example.com", "member-auth", "Member", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    var outsider = userRepository.save(new UserEntity("outsider-auth@example.com", "outsider-auth", "Outsider", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    String ownerToken = jwtService.createToken(owner.getEmail());
+    String memberToken = jwtService.createToken(member.getEmail());
+    String outsiderToken = jwtService.createToken(outsider.getEmail());
+    String teamId = createTeam(ownerToken);
+
+    mockMvc.perform(post("/api/teams/" + teamId + "/members")
+        .header("Authorization", "Bearer " + ownerToken)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"lookup\":\"member-auth@example.com\"}"))
+      .andExpect(status().isOk());
+
+    mockMvc.perform(post("/api/teams/" + teamId + "/members")
+        .header("Authorization", "Bearer " + memberToken)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"lookup\":\"outsider-auth@example.com\"}"))
+      .andExpect(status().isForbidden());
+
+    mockMvc.perform(get("/api/teams/" + teamId).header("Authorization", "Bearer " + outsiderToken))
+      .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void addMemberReturnsNotFoundWhenLookupDoesNotMatchAUser() throws Exception {
+    var owner = userRepository.save(new UserEntity("owner-lookup@example.com", "owner-lookup", "Owner", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    String token = jwtService.createToken(owner.getEmail());
+    String teamId = createTeam(token);
+
+    mockMvc.perform(post("/api/teams/" + teamId + "/members")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"lookup\":\"missing@example.com\"}"))
+      .andExpect(status().isNotFound());
+  }
+
+  private String createTeam(String token) throws Exception {
+    String response = mockMvc.perform(post("/api/teams")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"name\":\"Platform\"}"))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    return response.replaceAll("^\\{\"id\":\"([^\"]+)\".*", "$1");
   }
 }

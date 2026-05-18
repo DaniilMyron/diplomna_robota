@@ -1,6 +1,7 @@
 package com.diplomna.robota.teams;
 
 import com.diplomna.robota.teams.TeamDtos.CreateTeamRequest;
+import com.diplomna.robota.teams.TeamDtos.AddTeamMemberRequest;
 import com.diplomna.robota.teams.TeamDtos.TeamResponse;
 import jakarta.validation.Valid;
 import java.security.Principal;
@@ -35,5 +36,10 @@ public class TeamController {
   @GetMapping("/{teamId}")
   public TeamResponse detail(Principal principal, @PathVariable UUID teamId) {
     return teamService.getForMember(teamId, principal.getName());
+  }
+
+  @PostMapping("/{teamId}/members")
+  public TeamResponse addMember(Principal principal, @PathVariable UUID teamId, @Valid @RequestBody AddTeamMemberRequest request) {
+    return teamService.addMember(teamId, principal.getName(), request.lookup());
   }
 }

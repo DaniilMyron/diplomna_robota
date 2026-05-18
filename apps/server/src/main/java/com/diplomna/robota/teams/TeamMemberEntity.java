@@ -27,4 +27,6 @@ public class TeamMemberEntity extends BaseEntity {
     this.user = user;
     this.role = role;
   }
+
+  public UserEntity getUser() { return user; }
 }

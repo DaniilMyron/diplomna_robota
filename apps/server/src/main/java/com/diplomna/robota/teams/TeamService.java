@@ -20,7 +20,9 @@ public class TeamService {
   }
 
   public List<TeamResponse> listFor(String email) {
-    return teamRepository.findAllByOwnerEmail(email).stream().map(TeamResponse::from).toList();
+    return teamRepository.findAllByOwnerEmail(email).stream()
+      .map(team -> TeamResponse.from(team, teamMemberRepository.findAllByTeamIdOrderByCreatedAtAsc(team.getId()), true))
+      .toList();
   }
 
   @Transactional
@@ -28,14 +30,33 @@ public class TeamService {
     var owner = userRepository.findByEmail(email).orElseThrow();
     var team = teamRepository.save(new TeamEntity(name, owner));
     teamMemberRepository.save(new TeamMemberEntity(team, owner, "OWNER"));
-    return TeamResponse.from(team);
+    return TeamResponse.from(team, teamMemberRepository.findAllByTeamIdOrderByCreatedAtAsc(team.getId()), true);
   }
 
   public TeamResponse getForMember(UUID teamId, String email) {
     boolean isMember = teamMemberRepository.existsByTeamIdAndUserEmail(teamId, email);
     if (!isMember) {
-      throw new IllegalArgumentException("Team not accessible");
+      throw new TeamAccessDeniedException();
     }
-    return teamRepository.findById(teamId).map(TeamResponse::from).orElseThrow();
+    var team = teamRepository.findById(teamId).orElseThrow();
+    return TeamResponse.from(team, teamMemberRepository.findAllByTeamIdOrderByCreatedAtAsc(teamId), team.getOwner().getEmail().equals(email));
+  }
+
+  @Transactional
+  public TeamResponse addMember(UUID teamId, String actorEmail, String lookup) {
+    var team = teamRepository.findById(teamId).orElseThrow();
+    if (!team.getOwner().getEmail().equals(actorEmail)) {
+      throw new TeamAccessDeniedException();
+    }
+
+    var user = lookup.startsWith("@")
+      ? userRepository.findByUsername(lookup.substring(1)).orElseThrow(TeamMemberNotFoundException::new)
+      : userRepository.findByEmail(lookup).orElseThrow(TeamMemberNotFoundException::new);
+
+    if (!teamMemberRepository.existsByTeamIdAndUserId(teamId, user.getId())) {
+      teamMemberRepository.save(new TeamMemberEntity(team, user, "MEMBER"));
+    }
+
+    return TeamResponse.from(team, teamMemberRepository.findAllByTeamIdOrderByCreatedAtAsc(teamId), true);
   }
 }
