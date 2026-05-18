@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Owns the primary Team Board page, task placement by status, empty-state rendering, and inline membership management.
+Owns the primary Team Board page, task placement by status, empty-state rendering, inline membership management, and task edit/delete integration.
 
 ## Public surface
 
@@ -18,4 +18,4 @@ Owns the primary Team Board page, task placement by status, empty-state renderin
 
 - Auth module for the bearer token
 - Shared HTTP transport
-- Tasks module for task creation
+- Tasks module for task lifecycle actions

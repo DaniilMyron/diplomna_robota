@@ -41,4 +41,11 @@ public class TaskEntity extends BaseEntity {
   public String getDescription() { return description; }
   public TaskStatus getStatus() { return status; }
   public UserEntity getAssignee() { return assignee; }
+
+  public void update(String title, String description, UserEntity assignee, TaskStatus status) {
+    this.title = title;
+    this.description = description;
+    this.assignee = assignee;
+    this.status = status;
+  }
 }

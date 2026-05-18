@@ -113,3 +113,106 @@ test('a team member can create a todo task and see its compact card', async () =
     ),
   );
 });
+
+test('a team member can edit task details from the board and see the persisted card state', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'team-1', name: 'Platform', members: [], canManageMembership: false }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'task-1',
+          title: 'Draft card',
+          description: null,
+          status: 'TODO',
+          assignee: null,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'task-1',
+          title: 'Ready card',
+          description: 'Reviewed',
+          status: 'IN_PROGRESS',
+          assignee: { id: 'user-2', displayName: 'Maksym' },
+        }),
+      }),
+  );
+
+  renderBoard();
+  await screen.findByText('Platform Board');
+  fireEvent.change(screen.getByLabelText('Task title'), { target: { value: 'Draft card' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Create task' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Edit Draft card' }));
+
+  fireEvent.change(screen.getByLabelText('Edit title'), { target: { value: 'Ready card' } });
+  fireEvent.change(screen.getByLabelText('Edit description'), { target: { value: 'Reviewed' } });
+  fireEvent.change(screen.getByLabelText('Edit assignee ID'), { target: { value: 'user-2' } });
+  fireEvent.change(screen.getByLabelText('Edit status'), { target: { value: 'IN_PROGRESS' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Save task' }));
+
+  expect(await screen.findByText('Ready card')).toBeInTheDocument();
+  expect(screen.getByText('Maksym')).toBeInTheDocument();
+  expect(screen.queryByText('No tasks in In Progress.')).not.toBeInTheDocument();
+  await waitFor(() =>
+    expect(fetch).toHaveBeenLastCalledWith(
+      '/api/teams/team-1/tasks/task-1',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({
+          title: 'Ready card',
+          description: 'Reviewed',
+          assigneeId: 'user-2',
+          status: 'IN_PROGRESS',
+        }),
+      }),
+    ),
+  );
+});
+
+test('a team member can delete an obsolete task from the board', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'team-1', name: 'Platform', members: [], canManageMembership: false }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'task-1',
+          title: 'Obsolete card',
+          description: null,
+          status: 'TODO',
+          assignee: null,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => undefined,
+      }),
+  );
+
+  renderBoard();
+  await screen.findByText('Platform Board');
+  fireEvent.change(screen.getByLabelText('Task title'), { target: { value: 'Obsolete card' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Create task' }));
+  expect(await screen.findByText('Obsolete card')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Delete task' }));
+
+  await waitFor(() => expect(screen.queryByText('Obsolete card')).not.toBeInTheDocument());
+  expect(screen.getByText('No tasks in Todo.')).toBeInTheDocument();
+  await waitFor(() =>
+    expect(fetch).toHaveBeenLastCalledWith(
+      '/api/teams/team-1/tasks/task-1',
+      expect.objectContaining({ method: 'DELETE' }),
+    ),
+  );
+});
