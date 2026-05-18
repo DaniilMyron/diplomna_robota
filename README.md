@@ -26,6 +26,7 @@ The MVP now includes:
 
 - `CODEX.md` - repo-wide rules and the auth structural contract.
 - `docs/local-development.md` - local run instructions for both apps.
+- `dev.sh` - one-command local startup for PostgreSQL, backend, and frontend.
 - `docs/adr/` - the two meta ADRs (rules layout, per-module context docs).
 - `docs/adr/MODULE-TEMPLATE.md` - copy into every new module as `MODULE.md`.
 

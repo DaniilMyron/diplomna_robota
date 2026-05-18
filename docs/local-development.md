@@ -5,7 +5,24 @@
 - Java 21
 - Maven
 - Node.js 24 with Corepack enabled
-- PostgreSQL running locally
+- Docker for the one-command workflow
+- PostgreSQL running locally if you prefer to start services by hand
+
+## One-command workflow
+
+From the repo root:
+
+```bash
+./dev.sh
+```
+
+The script:
+
+1. Starts or creates a local PostgreSQL Docker container named `team-task-manager-postgres`.
+2. Waits until PostgreSQL is ready.
+3. Starts the backend with the local Docker database settings.
+4. Lets Spring Boot/Flyway apply database migrations automatically during startup.
+5. Starts the frontend dev server.
 
 ## Backend
 
