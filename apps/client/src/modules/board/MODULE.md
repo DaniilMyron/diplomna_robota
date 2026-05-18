@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Owns the primary Team Board page and its empty-state rendering.
+Owns the primary Team Board page, its empty-state rendering, and inline membership management.
 
 ## Public surface
 
@@ -10,7 +10,7 @@ Owns the primary Team Board page and its empty-state rendering.
 
 ## Owns
 
-- Calls to `/api/teams/{teamId}`
+- Calls to `/api/teams/{teamId}` and `/api/teams/{teamId}/members`
 - Team Board route composition
 
 ## Depends on

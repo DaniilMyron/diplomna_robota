@@ -8,3 +8,13 @@ export function getBoardTeam(token: string, teamId: string) {
     },
   });
 }
+
+export function addBoardTeamMember(token: string, teamId: string, lookup: string) {
+  return request<BoardTeam>(`/teams/${teamId}/members`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ lookup }),
+  });
+}
