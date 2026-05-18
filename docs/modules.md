@@ -4,8 +4,9 @@ One-line summary of every module in the repo. Each entry links to the module's `
 
 ## Client (`apps/client/src/modules/`)
 
-<!-- - [example-feature](../apps/client/src/modules/example-feature/MODULE.md) - one-line purpose. -->
+- [auth](../apps/client/src/modules/auth/MODULE.md) - registration, login, and authenticated client state.
 
 ## Server (`apps/server/src/main/java/`)
 
-<!-- - [example](../apps/server/src/main/java/com/example/example/MODULE.md) - one-line purpose. -->
+- [auth](../apps/server/src/main/java/com/diplomna/robota/auth/MODULE.md) - registration, login, and JWT request authentication.
+- [users](../apps/server/src/main/java/com/diplomna/robota/users/MODULE.md) - persisted user identity and current-user reads.
