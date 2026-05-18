@@ -58,6 +58,15 @@ public class TaskService {
     }
   }
 
+  @Transactional
+  public TaskResponse updateStatusForMember(UUID teamId, UUID taskId, String email, TaskStatus status) {
+    requireMember(teamId, email);
+    var task = taskRepository.findByIdAndTeamId(taskId, teamId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+    task.moveTo(status);
+    return TaskResponse.from(task);
+  }
+
   private UserEntity resolveAssignee(UUID teamId, UUID assigneeId) {
     if (!teamMemberRepository.existsByTeamIdAndUserId(teamId, assigneeId)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Assignee must belong to the team");

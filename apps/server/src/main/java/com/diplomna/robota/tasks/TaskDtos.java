@@ -11,6 +11,7 @@ public final class TaskDtos {
   public record CreateTaskRequest(@NotBlank String title, String description, UUID assigneeId) {}
 
   public record UpdateTaskRequest(@NotBlank String title, String description, UUID assigneeId, @NotNull TaskStatus status) {}
+  public record UpdateTaskStatusRequest(@NotNull TaskStatus status) {}
 
   public record AssigneeResponse(UUID id, String displayName) {
     static AssigneeResponse from(UserEntity assignee) {

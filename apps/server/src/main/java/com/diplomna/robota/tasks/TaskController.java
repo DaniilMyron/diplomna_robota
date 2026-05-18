@@ -3,6 +3,7 @@ package com.diplomna.robota.tasks;
 import com.diplomna.robota.tasks.TaskDtos.CreateTaskRequest;
 import com.diplomna.robota.tasks.TaskDtos.TaskResponse;
 import com.diplomna.robota.tasks.TaskDtos.UpdateTaskRequest;
+import com.diplomna.robota.tasks.TaskDtos.UpdateTaskStatusRequest;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.UUID;
@@ -39,5 +40,14 @@ public class TaskController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(Principal principal, @PathVariable UUID teamId, @PathVariable UUID taskId) {
     taskService.deleteForMember(teamId, taskId, principal.getName());
+  }
+
+  @PatchMapping("/{taskId}/status")
+  public TaskResponse updateStatus(
+      Principal principal,
+      @PathVariable UUID teamId,
+      @PathVariable UUID taskId,
+      @Valid @RequestBody UpdateTaskStatusRequest request) {
+    return taskService.updateStatusForMember(teamId, taskId, principal.getName(), request.status());
   }
 }

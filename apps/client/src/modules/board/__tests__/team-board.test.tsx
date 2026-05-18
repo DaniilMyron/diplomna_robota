@@ -216,3 +216,72 @@ test('a team member can delete an obsolete task from the board', async () => {
     ),
   );
 });
+
+test('a team member can move a task with explicit status controls', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'team-1', name: 'Platform', members: [], canManageMembership: false }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'task-1', title: 'Move board cards', description: null, status: 'TODO', assignee: null }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'task-1', title: 'Move board cards', description: null, status: 'IN_PROGRESS', assignee: null }),
+      }),
+  );
+
+  renderBoard();
+  await screen.findByText('Platform Board');
+  fireEvent.change(screen.getByLabelText('Task title'), { target: { value: 'Move board cards' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Create task' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Move Move board cards to In Progress' }));
+  expect(await screen.findByText('No tasks in Todo.')).toBeInTheDocument();
+  expect(screen.queryByText('No tasks in In Progress.')).not.toBeInTheDocument();
+});
+
+test('a team member can drag a task into another status column', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'team-1', name: 'Platform', members: [], canManageMembership: false }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'task-1', title: 'Drag board cards', description: null, status: 'TODO', assignee: null }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'task-1', title: 'Drag board cards', description: null, status: 'DONE', assignee: null }),
+      }),
+  );
+
+  renderBoard();
+  await screen.findByText('Platform Board');
+  fireEvent.change(screen.getByLabelText('Task title'), { target: { value: 'Drag board cards' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Create task' }));
+
+  const taskCard = (await screen.findByText('Drag board cards')).closest('article');
+  const doneColumn = screen.getByLabelText('Done column');
+  const dataTransfer = {
+    taskId: '',
+    setData(_type: string, taskId: string) {
+      this.taskId = taskId;
+    },
+    getData() {
+      return this.taskId;
+    },
+  };
+
+  fireEvent.dragStart(taskCard!, { dataTransfer });
+  fireEvent.dragOver(doneColumn, { dataTransfer });
+  fireEvent.drop(doneColumn, { dataTransfer });
+  expect(await screen.findByText('No tasks in Todo.')).toBeInTheDocument();
+  expect(screen.queryByText('No tasks in Done.')).not.toBeInTheDocument();
+});

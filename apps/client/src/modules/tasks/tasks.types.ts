@@ -25,3 +25,7 @@ export type UpdateTaskInput = {
   assigneeId?: string;
   status: TaskStatus;
 };
+
+export type UpdateTaskStatusInput = {
+  status: TaskStatus;
+};

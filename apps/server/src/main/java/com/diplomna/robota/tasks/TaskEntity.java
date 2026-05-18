@@ -48,4 +48,8 @@ public class TaskEntity extends BaseEntity {
     this.assignee = assignee;
     this.status = status;
   }
+
+  public void moveTo(TaskStatus status) {
+    this.status = status;
+  }
 }

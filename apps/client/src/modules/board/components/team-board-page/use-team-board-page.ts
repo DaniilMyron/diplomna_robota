@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/modules/auth';
+import { createTask, deleteTask, updateTask, updateTaskStatus } from '@/modules/tasks';
+import type { Task, TaskStatus } from '@/modules/tasks';
 import { addBoardTeamMember, getBoardTeam } from '../../api/board-api';
-import { createTask, deleteTask, updateTask } from '@/modules/tasks';
-import type { Task } from '@/modules/tasks';
 import type { BoardTeam } from '../../board.types';
 
 export function useTeamBoardPage() {
@@ -32,7 +32,6 @@ export function useTeamBoardPage() {
       if (!token || !teamId || !memberLookup.trim()) {
         return;
       }
-
       const updatedTeam = await addBoardTeamMember(token, teamId, memberLookup.trim());
       setTeam(updatedTeam);
       setMemberLookup('');
@@ -44,11 +43,10 @@ export function useTeamBoardPage() {
     setTitle,
     setDescription,
     setAssigneeId,
-    create: async () => {
+    async create() {
       if (!token || !teamId || !title.trim()) {
         return;
       }
-
       const task = await createTask(token, teamId, {
         title: title.trim(),
         ...(description.trim() ? { description: description.trim() } : {}),
@@ -59,19 +57,24 @@ export function useTeamBoardPage() {
       setDescription('');
       setAssigneeId('');
     },
-    update: async (taskId: string, input: { title: string; description?: string; assigneeId?: string; status: Task['status'] }) => {
+    async update(taskId: string, input: { title: string; description?: string; assigneeId?: string; status: TaskStatus }) {
       if (!token || !teamId) {
         return;
       }
-
       const task = await updateTask(token, teamId, taskId, input);
       setTasks((current) => current.map((candidate) => (candidate.id === task.id ? task : candidate)));
     },
-    remove: async (taskId: string) => {
+    async moveTask(taskId: string, status: TaskStatus) {
       if (!token || !teamId) {
         return;
       }
-
+      const task = await updateTaskStatus(token, teamId, taskId, { status });
+      setTasks((current) => current.map((candidate) => (candidate.id === task.id ? task : candidate)));
+    },
+    async remove(taskId: string) {
+      if (!token || !teamId) {
+        return;
+      }
       await deleteTask(token, teamId, taskId);
       setTasks((current) => current.filter((task) => task.id !== taskId));
     },

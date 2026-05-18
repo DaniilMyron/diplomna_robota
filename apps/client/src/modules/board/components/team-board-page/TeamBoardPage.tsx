@@ -1,5 +1,12 @@
 import * as React from 'react';
+import type { Task, TaskStatus } from '@/modules/tasks';
 import { useTeamBoardPage } from './use-team-board-page';
+
+const taskStatuses: Array<{ status: TaskStatus; label: string }> = [
+  { status: 'TODO', label: 'Todo' },
+  { status: 'IN_PROGRESS', label: 'In Progress' },
+  { status: 'DONE', label: 'Done' },
+];
 
 export function TeamBoardPage() {
   const model = useTeamBoardPage();
@@ -44,19 +51,33 @@ export function TeamBoardPage() {
       </label>
       <button onClick={() => void model.create()}>Create task</button>
       <div>
-        <section>
-          <h2>Todo</h2>
-          {todoTasks.length === 0 ? <p>No tasks in Todo.</p> : todoTasks.map((task) => <TaskCard key={task.id} task={task} onUpdate={model.update} onDelete={model.remove} />)}
-        </section>
-        <section>
-          <h2>In Progress</h2>
-          {inProgressTasks.length === 0 ? <p>No tasks in In Progress.</p> : inProgressTasks.map((task) => <TaskCard key={task.id} task={task} onUpdate={model.update} onDelete={model.remove} />)}
-        </section>
-        <section>
-          <h2>Done</h2>
-          {doneTasks.length === 0 ? <p>No tasks in Done.</p> : doneTasks.map((task) => <TaskCard key={task.id} task={task} onUpdate={model.update} onDelete={model.remove} />)}
-        </section>
+        <TaskColumn label="Todo" status="TODO" tasks={todoTasks} model={model} />
+        <TaskColumn label="In Progress" status="IN_PROGRESS" tasks={inProgressTasks} model={model} />
+        <TaskColumn label="Done" status="DONE" tasks={doneTasks} model={model} />
       </div>
+    </section>
+  );
+}
+
+function TaskColumn({
+  label,
+  status,
+  tasks,
+  model,
+}: {
+  label: string;
+  status: TaskStatus;
+  tasks: Task[];
+  model: ReturnType<typeof useTeamBoardPage>;
+}) {
+  return (
+    <section
+      aria-label={`${label} column`}
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={(event) => void model.moveTask(event.dataTransfer.getData('text/task-id'), status)}
+    >
+      <h2>{label}</h2>
+      {tasks.length === 0 ? <p>No tasks in {label}.</p> : tasks.map((task) => <TaskCard key={task.id} task={task} onUpdate={model.update} onDelete={model.remove} onMove={model.moveTask} />)}
     </section>
   );
 }
@@ -65,10 +86,12 @@ function TaskCard({
   task,
   onUpdate,
   onDelete,
+  onMove,
 }: {
-  task: { id: string; title: string; description: string | null; status: 'TODO' | 'IN_PROGRESS' | 'DONE'; assignee: { id: string; displayName: string } | null };
-  onUpdate: (taskId: string, input: { title: string; description?: string; assigneeId?: string; status: 'TODO' | 'IN_PROGRESS' | 'DONE' }) => Promise<void>;
+  task: Task;
+  onUpdate: (taskId: string, input: { title: string; description?: string; assigneeId?: string; status: TaskStatus }) => Promise<void>;
   onDelete: (taskId: string) => Promise<void>;
+  onMove: (taskId: string, status: TaskStatus) => Promise<void>;
 }) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [title, setTitle] = React.useState(task.title);
@@ -84,9 +107,16 @@ function TaskCard({
   }, [task]);
 
   return (
-    <article>
+    <article draggable onDragStart={(event) => event.dataTransfer.setData('text/task-id', task.id)}>
       <strong>{task.title}</strong>
       {task.assignee ? <p>{task.assignee.displayName}</p> : null}
+      {taskStatuses
+        .filter(({ status: candidate }) => candidate !== task.status)
+        .map(({ status: candidate, label }) => (
+          <button key={candidate} aria-label={`Move ${task.title} to ${label}`} onClick={() => void onMove(task.id, candidate)}>
+            {label}
+          </button>
+        ))}
       {isEditing ? (
         <div>
           <label>
@@ -103,10 +133,10 @@ function TaskCard({
           </label>
           <label>
             Edit status
-            <select aria-label="Edit status" value={status} onChange={(event) => setStatus(event.target.value as typeof status)}>
-              <option value="TODO">Todo</option>
-              <option value="IN_PROGRESS">In Progress</option>
-              <option value="DONE">Done</option>
+            <select aria-label="Edit status" value={status} onChange={(event) => setStatus(event.target.value as TaskStatus)}>
+              {taskStatuses.map(({ status: option, label }) => (
+                <option key={option} value={option}>{label}</option>
+              ))}
             </select>
           </label>
           <button onClick={() => void onUpdate(task.id, {
