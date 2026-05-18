@@ -35,6 +35,10 @@ Index of all modules: `docs/modules.md`. Rationale: `docs/adr/0002-per-module-co
 
 Domain terms are defined in `CONTEXT.md`. Use them as written. If you find yourself wanting a synonym, update `CONTEXT.md` first.
 
+## Issue tracker
+
+GitHub Issues is the default project issue tracker. Planning artifacts that become actionable work should be published there, using the `ready-for-agent` label when they are prepared for autonomous implementation.
+
 ## Auth contract (cross-cutting)
 
 The client and server use email/password authentication with JWT bearer tokens for API access. See `docs/adr/0003-jwt-auth-for-mvp.md`.

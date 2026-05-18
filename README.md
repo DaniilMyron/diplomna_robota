@@ -30,3 +30,9 @@ project files to match the stack above.
 - `CODEX.md` - repo-wide rules and the auth structural contract.
 - `docs/adr/` - the two meta ADRs (rules layout, per-module context docs).
 - `docs/adr/MODULE-TEMPLATE.md` - copy into every new module as `MODULE.md`.
+
+## Planning workflow
+
+- GitHub Issues is the default project issue tracker.
+- Publish PRDs and implementation tickets there.
+- Use the `ready-for-agent` label for work that is prepared for autonomous implementation.
