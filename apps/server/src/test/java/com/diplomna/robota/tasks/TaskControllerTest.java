@@ -33,7 +33,7 @@ class TaskControllerTest {
 
   @Test
   void teamMemberCanCreateUnassignedTodoTask() throws Exception {
-    var member = saveUser("member@example.com", "member", "Member");
+    var member = saveUser("task-member@example.com", "task-member", "Member");
     var team = saveTeam("Platform", member);
     String token = jwtService.createToken(member.getEmail());
 
@@ -67,8 +67,8 @@ class TaskControllerTest {
 
   @Test
   void taskAssigneeMustBelongToSameTeam() throws Exception {
-    var creator = saveUser("owner@example.com", "owner", "Owner");
-    var outsider = saveUser("outsider@example.com", "outsider", "Outsider");
+    var creator = saveUser("task-owner@example.com", "task-owner", "Owner");
+    var outsider = saveUser("task-outsider@example.com", "task-outsider", "Outsider");
     var team = saveTeam("Platform", creator);
     String token = jwtService.createToken(creator.getEmail());
 
