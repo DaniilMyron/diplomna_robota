@@ -20,7 +20,10 @@ public class TeamService {
   }
 
   public List<TeamResponse> listFor(String email) {
-    return teamRepository.findAllByOwnerEmail(email).stream().map(TeamResponse::from).toList();
+    return teamMemberRepository.findAllByUserEmail(email).stream()
+      .map(TeamMemberEntity::getTeam)
+      .map(TeamResponse::from)
+      .toList();
   }
 
   @Transactional

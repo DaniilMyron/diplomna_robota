@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Owns team creation, owner membership bootstrap, and team listing.
+Owns team creation, owner membership bootstrap, and accessible team listing.
 
 ## Public surface
 

@@ -23,6 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
 class TeamControllerTest {
   @Autowired MockMvc mockMvc;
   @Autowired UserRepository userRepository;
+  @Autowired TeamRepository teamRepository;
+  @Autowired TeamMemberRepository teamMemberRepository;
   @Autowired PasswordEncoder passwordEncoder;
   @Autowired JwtService jwtService;
 
@@ -61,5 +63,18 @@ class TeamControllerTest {
     mockMvc.perform(get("/api/teams/" + teamId).header("Authorization", "Bearer " + token))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.name").value("Platform"));
+  }
+
+  @Test
+  void teamMemberCanListAccessibleTeams() throws Exception {
+    var owner = userRepository.save(new UserEntity("owner-list@example.com", "owner-list", "Owner", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    var member = userRepository.save(new UserEntity("member-list@example.com", "member-list", "Member", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    var team = teamRepository.save(new TeamEntity("Platform", owner));
+    teamMemberRepository.save(new TeamMemberEntity(team, member, "MEMBER"));
+    String token = jwtService.createToken(member.getEmail());
+
+    mockMvc.perform(get("/api/teams").header("Authorization", "Bearer " + token))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$[0].name").value("Platform"));
   }
 }

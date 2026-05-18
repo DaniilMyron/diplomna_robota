@@ -7,6 +7,8 @@ Owns the My Teams home and client-side team creation/listing flow.
 ## Public surface
 
 - `MyTeamsPage`
+- `listTeams`
+- `Team`
 
 ## Owns
 
