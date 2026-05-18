@@ -1,0 +1,17 @@
+node_modules
+.turbo
+dist
+*.log
+.DS_Store
+
+# Env files — never commit. Use .env.example for templates.
+.env
+.env.*
+!.env.example
+
+# Claude Code: per-user permissions live here, do not commit
+.claude/settings.local.json
+**/.claude/settings.local.json
+
+# Playwright MCP snapshot artifacts
+.playwright-mcp/
