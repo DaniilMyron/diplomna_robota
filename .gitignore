@@ -1,7 +1,9 @@
 node_modules
+.pnpm-store
 .turbo
 dist
 target
+*.tsbuildinfo
 *.log
 .DS_Store
 
