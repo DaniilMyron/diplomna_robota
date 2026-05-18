@@ -18,3 +18,7 @@ export type CreateTaskInput = {
   description?: string;
   assigneeId?: string;
 };
+
+export type UpdateTaskStatusInput = {
+  status: TaskStatus;
+};

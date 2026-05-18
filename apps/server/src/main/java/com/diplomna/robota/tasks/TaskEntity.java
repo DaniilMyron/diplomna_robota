@@ -41,4 +41,8 @@ public class TaskEntity extends BaseEntity {
   public String getDescription() { return description; }
   public TaskStatus getStatus() { return status; }
   public UserEntity getAssignee() { return assignee; }
+
+  public void moveTo(TaskStatus status) {
+    this.status = status;
+  }
 }

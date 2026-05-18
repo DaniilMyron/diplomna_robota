@@ -1,6 +1,7 @@
 package com.diplomna.robota.tasks;
 
 import com.diplomna.robota.users.UserEntity;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
 import java.util.UUID;
 
@@ -8,6 +9,8 @@ public final class TaskDtos {
   private TaskDtos() {}
 
   public record CreateTaskRequest(@NotBlank String title, String description, UUID assigneeId) {}
+
+  public record UpdateTaskStatusRequest(@NotNull TaskStatus status) {}
 
   public record AssigneeResponse(UUID id, String displayName) {
     static AssigneeResponse from(UserEntity assignee) {

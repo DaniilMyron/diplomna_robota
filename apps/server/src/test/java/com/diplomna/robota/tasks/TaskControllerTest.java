@@ -1,5 +1,6 @@
 package com.diplomna.robota.tasks;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -77,6 +78,55 @@ class TaskControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"title\":\"Reject outsider\",\"assigneeId\":\"" + outsider.getId() + "\"}"))
       .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void teamMemberCanMoveTaskToAnotherStatus() throws Exception {
+    var member = saveUser("mover@example.com", "mover", "Mover");
+    var team = saveTeam("Platform", member);
+    String token = jwtService.createToken(member.getEmail());
+
+    String createdTask = mockMvc.perform(post("/api/teams/" + team.getId() + "/tasks")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"title\":\"Move me\"}"))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+    String taskId = createdTask.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+
+    mockMvc.perform(patch("/api/teams/" + team.getId() + "/tasks/" + taskId + "/status")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"status\":\"IN_PROGRESS\"}"))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.title").value("Move me"))
+      .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
+  }
+
+  @Test
+  void teamMemberCannotMoveTaskFromAnotherTeam() throws Exception {
+    var firstMember = saveUser("first@example.com", "first", "First");
+    var secondMember = saveUser("second@example.com", "second", "Second");
+    var firstTeam = saveTeam("First Team", firstMember);
+    var secondTeam = saveTeam("Second Team", secondMember);
+    String secondToken = jwtService.createToken(secondMember.getEmail());
+    String firstToken = jwtService.createToken(firstMember.getEmail());
+
+    String createdTask = mockMvc.perform(post("/api/teams/" + firstTeam.getId() + "/tasks")
+        .header("Authorization", "Bearer " + firstToken)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"title\":\"Keep scoped\"}"))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+    String taskId = createdTask.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+
+    mockMvc.perform(patch("/api/teams/" + secondTeam.getId() + "/tasks/" + taskId + "/status")
+        .header("Authorization", "Bearer " + secondToken)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"status\":\"DONE\"}"))
+      .andExpect(status().isNotFound());
   }
 
   private UserEntity saveUser(String email, String username, String displayName) {

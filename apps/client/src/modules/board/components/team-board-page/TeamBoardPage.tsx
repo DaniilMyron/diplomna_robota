@@ -1,4 +1,11 @@
 import { useTeamBoardPage } from './use-team-board-page';
+import type { Task, TaskStatus } from '@/modules/tasks';
+
+const taskStatuses: Array<{ status: TaskStatus; label: string }> = [
+  { status: 'TODO', label: 'Todo' },
+  { status: 'IN_PROGRESS', label: 'In Progress' },
+  { status: 'DONE', label: 'Done' },
+];
 
 export function TeamBoardPage() {
   const model = useTeamBoardPage();
@@ -11,7 +18,11 @@ export function TeamBoardPage() {
     <section>
       <h1>{team ? `${team.name} Board` : 'Board'}</h1>
       {team ? (
-        <section>
+        <section
+          aria-label="Todo column"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => void model.moveTask(event.dataTransfer.getData('text/task-id'), 'TODO')}
+        >
           <h2>Team Members</h2>
           <ul>
             {team.members.map((member) => (
@@ -43,28 +54,43 @@ export function TeamBoardPage() {
       </label>
       <button onClick={() => void model.create()}>Create task</button>
       <div>
-        <section>
+        <section
+          aria-label="In Progress column"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => void model.moveTask(event.dataTransfer.getData('text/task-id'), 'IN_PROGRESS')}
+        >
           <h2>Todo</h2>
-          {todoTasks.length === 0 ? <p>No tasks in Todo.</p> : todoTasks.map((task) => <TaskCard key={task.id} task={task} />)}
+          {todoTasks.length === 0 ? <p>No tasks in Todo.</p> : todoTasks.map((task) => <TaskCard key={task.id} task={task} onMove={model.moveTask} />)}
         </section>
-        <section>
+        <section
+          aria-label="Done column"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => void model.moveTask(event.dataTransfer.getData('text/task-id'), 'DONE')}
+        >
           <h2>In Progress</h2>
-          {inProgressTasks.length === 0 ? <p>No tasks in In Progress.</p> : inProgressTasks.map((task) => <TaskCard key={task.id} task={task} />)}
+          {inProgressTasks.length === 0 ? <p>No tasks in In Progress.</p> : inProgressTasks.map((task) => <TaskCard key={task.id} task={task} onMove={model.moveTask} />)}
         </section>
         <section>
           <h2>Done</h2>
-          {doneTasks.length === 0 ? <p>No tasks in Done.</p> : doneTasks.map((task) => <TaskCard key={task.id} task={task} />)}
+          {doneTasks.length === 0 ? <p>No tasks in Done.</p> : doneTasks.map((task) => <TaskCard key={task.id} task={task} onMove={model.moveTask} />)}
         </section>
       </div>
     </section>
   );
 }
 
-function TaskCard({ task }: { task: { title: string; assignee: { displayName: string } | null } }) {
+function TaskCard({ task, onMove }: { task: Task; onMove: (taskId: string, status: TaskStatus) => Promise<void> }) {
   return (
-    <article>
+    <article draggable onDragStart={(event) => event.dataTransfer.setData('text/task-id', task.id)}>
       <strong>{task.title}</strong>
       {task.assignee ? <p>{task.assignee.displayName}</p> : null}
+      {taskStatuses
+        .filter(({ status }) => status !== task.status)
+        .map(({ status, label }) => (
+          <button key={status} aria-label={`Move ${task.title} to ${label}`} onClick={() => void onMove(task.id, status)}>
+            {label}
+          </button>
+        ))}
     </article>
   );
 }

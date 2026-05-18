@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/modules/auth';
 import { addBoardTeamMember, getBoardTeam } from '../../api/board-api';
-import { createTask } from '@/modules/tasks';
-import type { Task } from '@/modules/tasks';
+import { createTask, updateTaskStatus } from '@/modules/tasks';
+import type { Task, TaskStatus } from '@/modules/tasks';
 import type { BoardTeam } from '../../board.types';
 
 export function useTeamBoardPage() {
@@ -58,6 +58,14 @@ export function useTeamBoardPage() {
       setTitle('');
       setDescription('');
       setAssigneeId('');
+    },
+    moveTask: async (taskId: string, status: TaskStatus) => {
+      if (!token || !teamId) {
+        return;
+      }
+
+      const task = await updateTaskStatus(token, teamId, taskId, { status });
+      setTasks((current) => current.map((currentTask) => (currentTask.id === task.id ? task : currentTask)));
     },
   };
 }
