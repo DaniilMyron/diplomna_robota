@@ -5,7 +5,9 @@ import com.diplomna.robota.teams.TeamDtos.TeamResponse;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,5 +30,10 @@ public class TeamController {
   @PostMapping
   public TeamResponse create(Principal principal, @Valid @RequestBody CreateTeamRequest request) {
     return teamService.createFor(principal.getName(), request.name());
+  }
+
+  @GetMapping("/{teamId}")
+  public TeamResponse detail(Principal principal, @PathVariable UUID teamId) {
+    return teamService.getForMember(teamId, principal.getName());
   }
 }

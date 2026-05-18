@@ -8,6 +8,7 @@ Owns team creation, owner membership bootstrap, and team listing.
 
 - `GET /api/teams`
 - `POST /api/teams`
+- `GET /api/teams/{teamId}`
 
 ## Owns
 

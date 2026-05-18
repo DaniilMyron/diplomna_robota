@@ -3,6 +3,7 @@ package com.diplomna.robota.teams;
 import com.diplomna.robota.teams.TeamDtos.TeamResponse;
 import com.diplomna.robota.users.UserRepository;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,5 +29,13 @@ public class TeamService {
     var team = teamRepository.save(new TeamEntity(name, owner));
     teamMemberRepository.save(new TeamMemberEntity(team, owner, "OWNER"));
     return TeamResponse.from(team);
+  }
+
+  public TeamResponse getForMember(UUID teamId, String email) {
+    boolean isMember = teamMemberRepository.existsByTeamIdAndUserEmail(teamId, email);
+    if (!isMember) {
+      throw new IllegalArgumentException("Team not accessible");
+    }
+    return teamRepository.findById(teamId).map(TeamResponse::from).orElseThrow();
   }
 }

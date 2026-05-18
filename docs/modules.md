@@ -5,6 +5,7 @@ One-line summary of every module in the repo. Each entry links to the module's `
 ## Client (`apps/client/src/modules/`)
 
 - [auth](../apps/client/src/modules/auth/MODULE.md) - registration, login, and authenticated client state.
+- [board](../apps/client/src/modules/board/MODULE.md) - primary Team Board page and empty-state rendering.
 - [teams](../apps/client/src/modules/teams/MODULE.md) - My Teams home, listing, and creation flow.
 
 ## Server (`apps/server/src/main/java/`)

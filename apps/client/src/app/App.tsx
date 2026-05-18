@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthPage, AuthProvider, RequireAuth } from '@/modules/auth';
+import { TeamBoardPage } from '@/modules/board';
 import { AppShell } from '@/modules/shared/layout/app-shell/AppShell';
 
 export function App() {
@@ -13,6 +14,14 @@ export function App() {
             element={
               <RequireAuth>
                 <AppShell />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/teams/:teamId/board"
+            element={
+              <RequireAuth>
+                <TeamBoardPage />
               </RequireAuth>
             }
           />

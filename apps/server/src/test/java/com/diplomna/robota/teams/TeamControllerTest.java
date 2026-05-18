@@ -42,4 +42,24 @@ class TeamControllerTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$[0].name").value("Platform"));
   }
+
+  @Test
+  void teamMemberCanOpenBoardTeamDetail() throws Exception {
+    var user = userRepository.save(new UserEntity("member@example.com", "member", "Member", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    String token = jwtService.createToken(user.getEmail());
+
+    String response = mockMvc.perform(post("/api/teams")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"name\":\"Platform\"}"))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    String teamId = response.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+
+    mockMvc.perform(get("/api/teams/" + teamId).header("Authorization", "Bearer " + token))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.name").value("Platform"));
+  }
 }

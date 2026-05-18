@@ -1,4 +1,5 @@
 import { useMyTeamsPage } from './use-my-teams-page';
+import { Link } from 'react-router-dom';
 
 export function MyTeamsPage() {
   const model = useMyTeamsPage();
@@ -9,7 +10,9 @@ export function MyTeamsPage() {
       {model.teams.length === 0 ? <p>No teams yet. Create your first team to get started.</p> : null}
       <ul>
         {model.teams.map((team) => (
-          <li key={team.id}>{team.name}</li>
+          <li key={team.id}>
+            <Link to={`/teams/${team.id}/board`}>{team.name}</Link>
+          </li>
         ))}
       </ul>
       <label>
