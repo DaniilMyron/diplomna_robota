@@ -12,22 +12,20 @@ A two-app repository:
 - `apps/client/` - Vite + React 19 frontend with strict TypeScript.
 - `apps/server/` - Java 21 + Spring Boot 3 backend built with Maven and backed by PostgreSQL.
 
-## Fill these in
+## Current scope
 
-- `CONTEXT.md` - blank domain glossary template. Fill it before writing
-  domain code; rules reference it for canonical terms.
-- `DESIGN.md` - blank design-system template. Define the visual language and
-  color tokens for the project.
+The MVP now includes:
 
-## Not included yet (next step)
-
-Build scaffolding is intentionally **not** included yet. Add the client
-`package.json` / Vite / TypeScript setup and the server `pom.xml` / Spring Boot
-project files to match the stack above.
+- registration, login, JWT authentication, and the authenticated app shell
+- `My Teams` with first-team creation
+- Team Boards with inline member management
+- Task creation, editing, deletion, explicit status controls, and drag-and-drop movement
+- grouped `Boards` navigation across accessible Teams
 
 ## Start here
 
 - `CODEX.md` - repo-wide rules and the auth structural contract.
+- `docs/local-development.md` - local run instructions for both apps.
 - `docs/adr/` - the two meta ADRs (rules layout, per-module context docs).
 - `docs/adr/MODULE-TEMPLATE.md` - copy into every new module as `MODULE.md`.
 
