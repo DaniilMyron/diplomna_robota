@@ -5,11 +5,13 @@ One-line summary of every module in the repo. Each entry links to the module's `
 ## Client (`apps/client/src/modules/`)
 
 - [auth](../apps/client/src/modules/auth/MODULE.md) - registration, login, and authenticated client state.
-- [board](../apps/client/src/modules/board/MODULE.md) - primary Team Board page and empty-state rendering.
+- [board](../apps/client/src/modules/board/MODULE.md) - primary Team Board page, status placement, and empty-state rendering.
+- [tasks](../apps/client/src/modules/tasks/MODULE.md) - Task creation contracts for the Team Board.
 - [teams](../apps/client/src/modules/teams/MODULE.md) - My Teams home, listing, and creation flow.
 
 ## Server (`apps/server/src/main/java/`)
 
 - [auth](../apps/server/src/main/java/com/diplomna/robota/auth/MODULE.md) - registration, login, and JWT request authentication.
+- [tasks](../apps/server/src/main/java/com/diplomna/robota/tasks/MODULE.md) - task creation for a team's Board.
 - [teams](../apps/server/src/main/java/com/diplomna/robota/teams/MODULE.md) - team creation, listing, and owner membership bootstrap.
 - [users](../apps/server/src/main/java/com/diplomna/robota/users/MODULE.md) - persisted user identity and current-user reads.
