@@ -11,6 +11,7 @@ vi.mock('@/modules/auth', () => ({
       displayName: 'Dmytro',
       avatarUrl: '/avatar.png',
     },
+    logout: vi.fn(),
   }),
 }));
 

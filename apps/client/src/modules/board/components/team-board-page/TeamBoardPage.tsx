@@ -1,6 +1,8 @@
 import * as React from 'react';
+import { Link } from 'react-router-dom';
 import type { Task, TaskStatus } from '@/modules/tasks';
 import { useTeamBoardPage } from './use-team-board-page';
+import styles from './TeamBoardPage.module.css';
 
 const taskStatuses: Array<{ status: TaskStatus; label: string }> = [
   { status: 'TODO', label: 'Todo' },
@@ -16,41 +18,56 @@ export function TeamBoardPage() {
   const doneTasks = model.tasks.filter((task) => task.status === 'DONE');
 
   return (
-    <section>
-      <h1>{team ? `${team.name} Board` : 'Board'}</h1>
-      {team ? (
-        <section>
-          <h2>Team Members</h2>
-          <ul>
-            {team.members.map((member) => (
-              <li key={member.id}>{member.displayName}</li>
-            ))}
-          </ul>
-          {team.canManageMembership ? (
-            <div>
-              <label>
-                Add member
-                <input aria-label="Add member" value={model.memberLookup} onChange={(event) => model.setMemberLookup(event.target.value)} />
-              </label>
-              <button onClick={() => void model.addMember()}>Add member</button>
-            </div>
-          ) : null}
+    <section className={styles.page}>
+      <header className={styles.headingRow}>
+        <h1 className={styles.heading}>{team ? `${team.name} Board` : 'Board'}</h1>
+        <Link className={styles.backLink} to="/">Back to teams</Link>
+      </header>
+      <div className={styles.topGrid}>
+        {team ? (
+          <section className={styles.panel}>
+            <h2 className={styles.panelHeading}>Team Members</h2>
+            <ul className={styles.members}>
+              {team.members.map((member) => (
+                <li className={styles.member} key={member.id}>{member.displayName}</li>
+              ))}
+            </ul>
+            {team.canManageMembership ? (
+              <div className={styles.inlineForm}>
+                <label className={styles.field}>
+                  Add member
+                  <input
+                    className={styles.input}
+                    aria-label="Add member"
+                    value={model.memberLookup}
+                    onChange={(event) => model.setMemberLookup(event.target.value)}
+                  />
+                </label>
+                <button className={styles.secondaryButton} onClick={() => void model.addMember()}>Add member</button>
+              </div>
+            ) : null}
+          </section>
+        ) : null}
+        <section className={styles.panel}>
+          <h2 className={styles.panelHeading}>Create task</h2>
+          <div className={styles.taskForm}>
+            <label className={styles.field}>
+              Task title
+              <input className={styles.input} aria-label="Task title" value={model.title} onChange={(event) => model.setTitle(event.target.value)} />
+            </label>
+            <label className={styles.field}>
+              Description
+              <input className={styles.input} aria-label="Description" value={model.description} onChange={(event) => model.setDescription(event.target.value)} />
+            </label>
+            <label className={styles.field}>
+              Assignee ID
+              <input className={styles.input} aria-label="Assignee ID" value={model.assigneeId} onChange={(event) => model.setAssigneeId(event.target.value)} />
+            </label>
+            <button className={styles.primaryButton} onClick={() => void model.create()}>Create task</button>
+          </div>
         </section>
-      ) : null}
-      <label>
-        Task title
-        <input aria-label="Task title" value={model.title} onChange={(event) => model.setTitle(event.target.value)} />
-      </label>
-      <label>
-        Description
-        <input aria-label="Description" value={model.description} onChange={(event) => model.setDescription(event.target.value)} />
-      </label>
-      <label>
-        Assignee ID
-        <input aria-label="Assignee ID" value={model.assigneeId} onChange={(event) => model.setAssigneeId(event.target.value)} />
-      </label>
-      <button onClick={() => void model.create()}>Create task</button>
-      <div>
+      </div>
+      <div className={styles.board}>
         <TaskColumn label="Todo" status="TODO" tasks={todoTasks} model={model} />
         <TaskColumn label="In Progress" status="IN_PROGRESS" tasks={inProgressTasks} model={model} />
         <TaskColumn label="Done" status="DONE" tasks={doneTasks} model={model} />
@@ -72,12 +89,13 @@ function TaskColumn({
 }) {
   return (
     <section
+      className={styles.column}
       aria-label={`${label} column`}
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => void model.moveTask(event.dataTransfer.getData('text/task-id'), status)}
     >
-      <h2>{label}</h2>
-      {tasks.length === 0 ? <p>No tasks in {label}.</p> : tasks.map((task) => <TaskCard key={task.id} task={task} onUpdate={model.update} onDelete={model.remove} onMove={model.moveTask} />)}
+      <h2 className={styles.columnHeading}>{label}</h2>
+      {tasks.length === 0 ? <p className={styles.emptyColumn}>No tasks in {label}.</p> : tasks.map((task) => <TaskCard key={task.id} task={task} onUpdate={model.update} onDelete={model.remove} onMove={model.moveTask} />)}
     </section>
   );
 }
@@ -107,39 +125,41 @@ function TaskCard({
   }, [task]);
 
   return (
-    <article draggable onDragStart={(event) => event.dataTransfer.setData('text/task-id', task.id)}>
-      <strong>{task.title}</strong>
-      {task.assignee ? <p>{task.assignee.displayName}</p> : null}
-      {taskStatuses
-        .filter(({ status: candidate }) => candidate !== task.status)
-        .map(({ status: candidate, label }) => (
-          <button key={candidate} aria-label={`Move ${task.title} to ${label}`} onClick={() => void onMove(task.id, candidate)}>
-            {label}
-          </button>
-        ))}
+    <article className={styles.card} draggable onDragStart={(event) => event.dataTransfer.setData('text/task-id', task.id)}>
+      <strong className={styles.cardTitle}>{task.title}</strong>
+      {task.assignee ? <p className={styles.assignee}>{task.assignee.displayName}</p> : null}
+      <div className={styles.actions}>
+        {taskStatuses
+          .filter(({ status: candidate }) => candidate !== task.status)
+          .map(({ status: candidate, label }) => (
+            <button className={styles.secondaryButton} key={candidate} aria-label={`Move ${task.title} to ${label}`} onClick={() => void onMove(task.id, candidate)}>
+              {label}
+            </button>
+          ))}
+      </div>
       {isEditing ? (
-        <div>
-          <label>
+        <div className={styles.editPanel}>
+          <label className={styles.field}>
             Edit title
-            <input aria-label="Edit title" value={title} onChange={(event) => setTitle(event.target.value)} />
+            <input className={styles.input} aria-label="Edit title" value={title} onChange={(event) => setTitle(event.target.value)} />
           </label>
-          <label>
+          <label className={styles.field}>
             Edit description
-            <input aria-label="Edit description" value={description} onChange={(event) => setDescription(event.target.value)} />
+            <input className={styles.input} aria-label="Edit description" value={description} onChange={(event) => setDescription(event.target.value)} />
           </label>
-          <label>
+          <label className={styles.field}>
             Edit assignee ID
-            <input aria-label="Edit assignee ID" value={assigneeId} onChange={(event) => setAssigneeId(event.target.value)} />
+            <input className={styles.input} aria-label="Edit assignee ID" value={assigneeId} onChange={(event) => setAssigneeId(event.target.value)} />
           </label>
-          <label>
+          <label className={styles.field}>
             Edit status
-            <select aria-label="Edit status" value={status} onChange={(event) => setStatus(event.target.value as TaskStatus)}>
+            <select className={styles.select} aria-label="Edit status" value={status} onChange={(event) => setStatus(event.target.value as TaskStatus)}>
               {taskStatuses.map(({ status: option, label }) => (
                 <option key={option} value={option}>{label}</option>
               ))}
             </select>
           </label>
-          <button onClick={() => void onUpdate(task.id, {
+          <button className={styles.primaryButton} onClick={() => void onUpdate(task.id, {
             title: title.trim(),
             ...(description.trim() ? { description: description.trim() } : {}),
             ...(assigneeId.trim() ? { assigneeId: assigneeId.trim() } : {}),
@@ -147,9 +167,9 @@ function TaskCard({
           }).then(() => setIsEditing(false))}>Save task</button>
         </div>
       ) : (
-        <button aria-label={`Edit ${task.title}`} onClick={() => setIsEditing(true)}>Edit</button>
+        <button className={styles.secondaryButton} aria-label={`Edit ${task.title}`} onClick={() => setIsEditing(true)}>Edit</button>
       )}
-      <button onClick={() => void onDelete(task.id)}>Delete task</button>
+      <button className={styles.dangerButton} onClick={() => void onDelete(task.id)}>Delete task</button>
     </article>
   );
 }

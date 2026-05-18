@@ -1,0 +1,164 @@
+.shell {
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, #f8fafc 0, #ffffff 220px),
+    var(--background);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 72px;
+  padding: 0 clamp(18px, 4vw, 40px);
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+}
+
+.brand {
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.homeLink,
+.menuSummary,
+.logoutButton {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.homeLink {
+  padding: 0 14px;
+}
+
+.boardsMenu {
+  position: relative;
+}
+
+.menuSummary {
+  list-style: none;
+  padding: 0 14px;
+  cursor: pointer;
+}
+
+.menuSummary::-webkit-details-marker {
+  display: none;
+}
+
+.menuPanel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: min(280px, calc(100vw - 36px));
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  box-shadow: var(--shadow-card);
+}
+
+.teamGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.emptyMenu {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.teamHeading {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.boardLink {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  margin: 0;
+  border: 0;
+  background: var(--border);
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.logoutButton {
+  padding: 0 14px;
+}
+
+.main {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: clamp(20px, 4vw, 36px);
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-block: 14px;
+  }
+
+  .brand {
+    width: 100%;
+  }
+
+  .account {
+    margin-left: 0;
+  }
+}
