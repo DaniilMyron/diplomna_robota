@@ -20,10 +20,15 @@ function renderBoard() {
 test('a team member can open a board with three empty columns', async () => {
   vi.stubGlobal(
     'fetch',
-    vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ id: 'team-1', name: 'Platform', members: [], canManageMembership: false }),
-    }),
+    vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'team-1', name: 'Platform', members: [], canManageMembership: false }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      }),
   );
 
   renderBoard();
@@ -47,6 +52,10 @@ test('a team owner can add a member inline from the board', async () => {
           canManageMembership: true,
           members: [{ id: 'user-1', email: 'owner@example.com', username: 'owner', displayName: 'Owner', avatarUrl: '/avatars/default.png' }],
         }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -82,6 +91,10 @@ test('a team member can create a todo task and see its compact card', async () =
             canManageMembership: false,
             members: [{ id: 'user-1', email: 'iryna@example.com', username: 'iryna', displayName: 'Iryna', avatarUrl: '/avatars/default.png' }],
           }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -132,6 +145,10 @@ test('a team member can edit task details from the board and see the persisted c
             canManageMembership: false,
             members: [{ id: 'user-2', email: 'maksym@example.com', username: 'maksym', displayName: 'Maksym', avatarUrl: '/avatars/default.png' }],
           }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -196,6 +213,10 @@ test('a team member can delete an obsolete task from the board', async () => {
       })
       .mockResolvedValueOnce({
         ok: true,
+        json: async () => [],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
         json: async () => ({
           id: 'task-1',
           title: 'Obsolete card',
@@ -238,6 +259,10 @@ test('a team member can move a task with explicit status controls', async () => 
       })
       .mockResolvedValueOnce({
         ok: true,
+        json: async () => [],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
         json: async () => ({ id: 'task-1', title: 'Move board cards', description: null, status: 'TODO', assignee: null }),
       })
       .mockResolvedValueOnce({
@@ -262,6 +287,10 @@ test('a team member can drag a task into another status column', async () => {
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ id: 'team-1', name: 'Platform', members: [], canManageMembership: false }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -295,4 +324,38 @@ test('a team member can drag a task into another status column', async () => {
   fireEvent.drop(doneColumn, { dataTransfer });
   expect(await screen.findByText('No tasks in Todo.')).toBeInTheDocument();
   expect(screen.queryByText('No tasks in Done.')).not.toBeInTheDocument();
+});
+
+test('a team member sees tasks loaded from the board API on page load', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'team-1',
+          name: 'Platform',
+          canManageMembership: false,
+          members: [{ id: 'user-1', email: 'loaded@example.com', username: 'loaded', displayName: 'Loaded User', avatarUrl: '/avatars/default.png' }],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{
+          id: 'task-1',
+          title: 'Persisted task',
+          description: null,
+          status: 'TODO',
+          assignee: { id: 'user-1', username: 'loaded', displayName: 'Loaded User', avatarUrl: '/avatars/default.png' },
+        }],
+      }),
+  );
+
+  renderBoard();
+
+  expect(await screen.findByText('Persisted task')).toBeInTheDocument();
+  expect(screen.queryByText('No tasks in Todo.')).not.toBeInTheDocument();
+  expect(fetch).toHaveBeenCalledWith('/api/teams/team-1/tasks', expect.objectContaining({
+    headers: expect.objectContaining({ Authorization: 'Bearer jwt-token' }),
+  }));
 });

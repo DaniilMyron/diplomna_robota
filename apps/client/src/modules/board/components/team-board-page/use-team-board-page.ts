@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/modules/auth';
 import { HttpError } from '@/modules/shared/http/http-client';
-import { createTask, deleteTask, updateTask, updateTaskStatus } from '@/modules/tasks';
+import { createTask, deleteTask, listTasks, updateTask, updateTaskStatus } from '@/modules/tasks';
 import type { Task, TaskStatus } from '@/modules/tasks';
 import { addBoardTeamMember, getBoardTeam } from '../../api/board-api';
 import type { BoardTeam, BoardTeamMember } from '../../board.types';
@@ -25,7 +25,13 @@ export function useTeamBoardPage() {
       return;
     }
 
-    void getBoardTeam(token, teamId).then(setTeam);
+    void Promise.all([
+      getBoardTeam(token, teamId),
+      listTasks(token, teamId),
+    ]).then(([nextTeam, nextTasks]) => {
+      setTeam(nextTeam);
+      setTasks(nextTasks);
+    });
   }, [teamId, token]);
 
   return {

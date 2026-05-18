@@ -5,6 +5,7 @@ import com.diplomna.robota.teams.TeamMemberRepository;
 import com.diplomna.robota.teams.TeamRepository;
 import com.diplomna.robota.users.UserEntity;
 import com.diplomna.robota.users.UserRepository;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,13 @@ public class TaskService {
     this.teamRepository = teamRepository;
     this.teamMemberRepository = teamMemberRepository;
     this.userRepository = userRepository;
+  }
+
+  public List<TaskResponse> listForMember(UUID teamId, String email) {
+    requireMember(teamId, email);
+    return taskRepository.findAllByTeamIdOrderByCreatedAtAsc(teamId).stream()
+      .map(TaskResponse::from)
+      .toList();
   }
 
   @Transactional

@@ -44,6 +44,11 @@
   box-shadow: var(--shadow-card);
 }
 
+.membersPanel {
+  border-color: #b8c2d3;
+  background: #fbfcff;
+}
+
 .panelHeading {
   margin: 0;
   font-size: 18px;

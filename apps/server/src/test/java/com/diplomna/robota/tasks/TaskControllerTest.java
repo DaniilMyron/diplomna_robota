@@ -1,6 +1,7 @@
 package com.diplomna.robota.tasks;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -150,6 +151,27 @@ class TaskControllerTest {
     mockMvc.perform(delete("/api/teams/" + team.getId() + "/tasks/" + taskId)
         .header("Authorization", "Bearer " + token))
       .andExpect(status().isNoContent());
+  }
+
+  @Test
+  void teamMemberCanListPersistedBoardTasks() throws Exception {
+    var creator = saveUser("list-tasks@example.com", "list-tasks", "Task Lister");
+    var assignee = saveUser("list-assignee@example.com", "list-assignee", "List Assignee");
+    var team = saveTeam("Platform", creator);
+    teamMemberRepository.save(new TeamMemberEntity(team, assignee, "MEMBER"));
+    String token = jwtService.createToken(creator.getEmail());
+
+    mockMvc.perform(post("/api/teams/" + team.getId() + "/tasks")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"title\":\"Persist me\",\"assigneeId\":\"" + assignee.getId() + "\"}"))
+      .andExpect(status().isOk());
+
+    mockMvc.perform(get("/api/teams/" + team.getId() + "/tasks")
+        .header("Authorization", "Bearer " + token))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$[0].title").value("Persist me"))
+      .andExpect(jsonPath("$[0].assignee.username").value("list-assignee"));
   }
 
   @Test

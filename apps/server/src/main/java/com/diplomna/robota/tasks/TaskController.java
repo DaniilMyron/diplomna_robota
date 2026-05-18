@@ -6,7 +6,9 @@ import com.diplomna.robota.tasks.TaskDtos.UpdateTaskRequest;
 import com.diplomna.robota.tasks.TaskDtos.UpdateTaskStatusRequest;
 import jakarta.validation.Valid;
 import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +26,11 @@ public class TaskController {
 
   public TaskController(TaskService taskService) {
     this.taskService = taskService;
+  }
+
+  @GetMapping
+  public List<TaskResponse> list(Principal principal, @PathVariable UUID teamId) {
+    return taskService.listForMember(teamId, principal.getName());
   }
 
   @PostMapping

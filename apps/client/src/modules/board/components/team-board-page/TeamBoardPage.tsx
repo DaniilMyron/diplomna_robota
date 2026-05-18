@@ -26,7 +26,7 @@ export function TeamBoardPage() {
       </header>
       <div className={styles.topGrid}>
         {team ? (
-          <section className={styles.panel}>
+          <section className={`${styles.panel} ${styles.membersPanel}`}>
             <h2 className={styles.panelHeading}>Team Members</h2>
             <ul className={styles.members}>
               {team.members.map((member) => (
@@ -227,13 +227,21 @@ function AssigneeOptions({ id, members }: { id: string; members: BoardTeamMember
 }
 
 function AssigneeAvatar({ assignee }: { assignee: Task['assignee'] }) {
+  const [imageFailed, setImageFailed] = React.useState(false);
+
+  React.useEffect(() => {
+    setImageFailed(false);
+  }, [assignee?.avatarUrl]);
+
   if (!assignee) {
     return <span className={styles.avatar} aria-label="Unassigned">?</span>;
   }
 
+  const initial = assignee.displayName.slice(0, 1).toUpperCase() || '?';
+
   return (
     <span className={styles.avatar} title={`${assignee.displayName} (@${assignee.username})`}>
-      {assignee.avatarUrl ? <img src={assignee.avatarUrl} alt="" /> : assignee.displayName.slice(0, 1).toUpperCase()}
+      {assignee.avatarUrl && !imageFailed ? <img src={assignee.avatarUrl} alt="" onError={() => setImageFailed(true)} /> : initial}
     </span>
   );
 }

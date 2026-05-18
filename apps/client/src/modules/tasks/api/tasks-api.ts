@@ -1,6 +1,14 @@
 import { request } from '@/modules/shared/http/http-client';
 import type { CreateTaskInput, Task, UpdateTaskInput, UpdateTaskStatusInput } from '../tasks.types';
 
+export function listTasks(token: string, teamId: string) {
+  return request<Task[]>(`/teams/${teamId}/tasks`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
 export function createTask(token: string, teamId: string, input: CreateTaskInput) {
   return request<Task>(`/teams/${teamId}/tasks`, {
     method: 'POST',
