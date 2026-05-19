@@ -7,6 +7,9 @@ target
 *.tsbuildinfo
 *.log
 .DS_Store
+docs/diploma-rules
+docs/generated-diploma
+tools
 
 # Env files - never commit. Use .env.example for templates.
 .env
