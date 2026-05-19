@@ -22,7 +22,7 @@ The script:
 2. Waits until PostgreSQL is ready.
 3. Starts the backend with the local Docker database settings.
 4. Lets Spring Boot/Flyway apply database migrations automatically during startup.
-5. Starts the frontend dev server.
+5. Starts the frontend dev server on `http://localhost:5173`.
 
 ## Backend
 
