@@ -4,11 +4,11 @@ import { useAuth } from '@/modules/auth';
 import { HttpError } from '@/modules/shared/http/http-client';
 import { createTask, deleteTask, listTasks, updateTask, updateTaskStatus } from '@/modules/tasks';
 import type { Task, TaskStatus } from '@/modules/tasks';
-import { addBoardTeamMember, getBoardTeam } from '../../api/board-api';
+import { addBoardTeamMember, getBoardTeam, removeBoardTeamMember } from '../../api/board-api';
 import type { BoardTeam, BoardTeamMember } from '../../board.types';
 
 export function useTeamBoardPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { teamId = '' } = useParams();
   const [team, setTeam] = useState<BoardTeam | null>(null);
   const [memberLookup, setMemberLookup] = useState('');
@@ -35,6 +35,8 @@ export function useTeamBoardPage() {
   }, [teamId, token]);
 
   return {
+    teamId,
+    currentUserId: user?.id ?? null,
     team,
     memberLookup,
     setMemberLookup(value: string) {
@@ -66,6 +68,15 @@ export function useTeamBoardPage() {
         }
         throw error;
       }
+    },
+    async removeMember(userId: string) {
+      if (!token || !teamId) {
+        return;
+      }
+      const updatedTeam = await removeBoardTeamMember(token, teamId, userId);
+      setTeam(updatedTeam);
+      setMemberLookupError(null);
+      setMemberNotice(null);
     },
     tasks,
     title,

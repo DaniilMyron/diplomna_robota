@@ -8,6 +8,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,5 +42,10 @@ public class TeamController {
   @PostMapping("/{teamId}/members")
   public TeamResponse addMember(Principal principal, @PathVariable UUID teamId, @Valid @RequestBody AddTeamMemberRequest request) {
     return teamService.addMember(teamId, principal.getName(), request.lookup());
+  }
+
+  @DeleteMapping("/{teamId}/members/{userId}")
+  public TeamResponse removeMember(Principal principal, @PathVariable UUID teamId, @PathVariable UUID userId) {
+    return teamService.removeMember(teamId, userId, principal.getName());
   }
 }

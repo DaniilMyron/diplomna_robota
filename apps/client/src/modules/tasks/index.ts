@@ -1,2 +1,2 @@
-export { createTask, deleteTask, listTasks, updateTask, updateTaskStatus } from './api/tasks-api';
-export type { CreateTaskInput, Task, TaskStatus, UpdateTaskInput, UpdateTaskStatusInput } from './tasks.types';
+export { createTask, createTaskComment, deleteTask, getTask, listTaskComments, listTasks, updateTask, updateTaskStatus } from './api/tasks-api';
+export type { CreateTaskCommentInput, CreateTaskInput, Task, TaskComment, TaskStatus, UpdateTaskInput, UpdateTaskStatusInput } from './tasks.types';

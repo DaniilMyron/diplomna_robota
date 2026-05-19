@@ -1,8 +1,16 @@
 import { request } from '@/modules/shared/http/http-client';
-import type { CreateTaskInput, Task, UpdateTaskInput, UpdateTaskStatusInput } from '../tasks.types';
+import type { CreateTaskCommentInput, CreateTaskInput, Task, TaskComment, UpdateTaskInput, UpdateTaskStatusInput } from '../tasks.types';
 
 export function listTasks(token: string, teamId: string) {
   return request<Task[]>(`/teams/${teamId}/tasks`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getTask(token: string, teamId: string, taskId: string) {
+  return request<Task>(`/teams/${teamId}/tasks/${taskId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -45,5 +53,23 @@ export function deleteTask(token: string, teamId: string, taskId: string) {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+  });
+}
+
+export function listTaskComments(token: string, teamId: string, taskId: string) {
+  return request<TaskComment[]>(`/teams/${teamId}/tasks/${taskId}/comments`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function createTaskComment(token: string, teamId: string, taskId: string, input: CreateTaskCommentInput) {
+  return request<TaskComment>(`/teams/${teamId}/tasks/${taskId}/comments`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(input),
   });
 }

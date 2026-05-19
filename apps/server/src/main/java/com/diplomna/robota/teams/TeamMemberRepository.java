@@ -1,6 +1,7 @@
 package com.diplomna.robota.teams;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -9,4 +10,5 @@ public interface TeamMemberRepository extends JpaRepository<TeamMemberEntity, UU
   boolean existsByTeamIdAndUserId(UUID teamId, UUID userId);
   List<TeamMemberEntity> findAllByTeamIdOrderByCreatedAtAsc(UUID teamId);
   List<TeamMemberEntity> findAllByUserEmail(String email);
+  Optional<TeamMemberEntity> findByTeamIdAndUserId(UUID teamId, UUID userId);
 }

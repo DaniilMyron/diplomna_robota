@@ -15,6 +15,13 @@ export type Task = {
   assignee: TaskAssignee | null;
 };
 
+export type TaskComment = {
+  id: string;
+  body: string;
+  author: TaskAssignee;
+  createdAt: string;
+};
+
 export type CreateTaskInput = {
   title: string;
   description?: string;
@@ -30,4 +37,8 @@ export type UpdateTaskInput = {
 
 export type UpdateTaskStatusInput = {
   status: TaskStatus;
+};
+
+export type CreateTaskCommentInput = {
+  body: string;
 };

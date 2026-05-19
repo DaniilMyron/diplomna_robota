@@ -26,4 +26,8 @@ public abstract class BaseEntity {
   public UUID getId() {
     return id;
   }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
 }

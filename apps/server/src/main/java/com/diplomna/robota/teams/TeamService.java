@@ -64,4 +64,21 @@ public class TeamService {
 
     return TeamResponse.from(team, teamMemberRepository.findAllByTeamIdOrderByCreatedAtAsc(teamId), true);
   }
+
+  @Transactional
+  public TeamResponse removeMember(UUID teamId, UUID userId, String actorEmail) {
+    var team = teamRepository.findById(teamId).orElseThrow();
+    if (!team.getOwner().getEmail().equals(actorEmail)) {
+      throw new TeamAccessDeniedException();
+    }
+    if (team.getOwner().getId().equals(userId)) {
+      throw new TeamAccessDeniedException();
+    }
+
+    var member = teamMemberRepository.findByTeamIdAndUserId(teamId, userId)
+      .orElseThrow(TeamMemberNotFoundException::new);
+    teamMemberRepository.delete(member);
+
+    return TeamResponse.from(team, teamMemberRepository.findAllByTeamIdOrderByCreatedAtAsc(teamId), true);
+  }
 }

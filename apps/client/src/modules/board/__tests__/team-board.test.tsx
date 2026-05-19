@@ -4,7 +4,10 @@ import { expect, test, vi } from 'vitest';
 import { TeamBoardPage } from '../pages/TeamBoardPage';
 
 vi.mock('@/modules/auth', () => ({
-  useAuth: () => ({ token: 'jwt-token' }),
+  useAuth: () => ({
+    token: 'jwt-token',
+    user: { id: 'user-1', email: 'owner@example.com', username: 'owner', displayName: 'Owner', avatarUrl: '/avatars/default.png' },
+  }),
 }));
 
 function renderBoard() {
@@ -77,6 +80,110 @@ test('a team owner can add a member inline from the board', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
   expect(await screen.findByText('Member')).toBeInTheDocument();
   expect(screen.getByText('User member has been added.')).toBeInTheDocument();
+});
+
+test('a team owner can remove a member from the board popover', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'team-1',
+          name: 'Platform',
+          canManageMembership: true,
+          members: [
+            { id: 'user-1', email: 'owner@example.com', username: 'owner', displayName: 'Owner', avatarUrl: '/avatars/default.png' },
+            { id: 'user-2', email: 'member@example.com', username: 'member', displayName: 'Member', avatarUrl: '/avatars/default.png' },
+          ],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'team-1',
+          name: 'Platform',
+          canManageMembership: true,
+          members: [{ id: 'user-1', email: 'owner@example.com', username: 'owner', displayName: 'Owner', avatarUrl: '/avatars/default.png' }],
+        }),
+      }),
+  );
+
+  renderBoard();
+  expect(await screen.findByText('Member')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Manage Member' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Delete user' }));
+
+  await waitFor(() => expect(screen.queryByText('Member')).not.toBeInTheDocument());
+  await waitFor(() =>
+    expect(fetch).toHaveBeenLastCalledWith(
+      '/api/teams/team-1/members/user-2',
+      expect.objectContaining({ method: 'DELETE' }),
+    ),
+  );
+});
+
+test('a team owner cannot open the membership popover for themselves', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'team-1',
+          name: 'Platform',
+          canManageMembership: true,
+          members: [
+            { id: 'user-1', email: 'owner@example.com', username: 'owner', displayName: 'Owner', avatarUrl: '/avatars/default.png' },
+            { id: 'user-2', email: 'member@example.com', username: 'member', displayName: 'Member', avatarUrl: '/avatars/default.png' },
+          ],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      }),
+  );
+
+  renderBoard();
+  expect(await screen.findByText('Owner')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Manage Owner' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Manage Member' })).toBeInTheDocument();
+});
+
+test('a team owner member popover closes after an outside click', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'team-1',
+          name: 'Platform',
+          canManageMembership: true,
+          members: [
+            { id: 'user-1', email: 'owner@example.com', username: 'owner', displayName: 'Owner', avatarUrl: '/avatars/default.png' },
+            { id: 'user-2', email: 'member@example.com', username: 'member', displayName: 'Member', avatarUrl: '/avatars/default.png' },
+          ],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      }),
+  );
+
+  renderBoard();
+  fireEvent.click(await screen.findByRole('button', { name: 'Manage Member' }));
+  expect(screen.getByRole('button', { name: 'Delete user' })).toBeInTheDocument();
+
+  fireEvent.mouseDown(document.body);
+
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Delete user' })).not.toBeInTheDocument());
 });
 
 test('adding an existing team member shows an inline error', async () => {

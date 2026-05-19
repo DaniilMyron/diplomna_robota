@@ -1,6 +1,7 @@
 package com.diplomna.robota.teams;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -80,6 +81,26 @@ class TeamControllerTest {
         .content("{\"lookup\":\"username-member\"}"))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.members[1].username").value("username-member"));
+  }
+
+  @Test
+  void ownerCanRemoveTeamMembers() throws Exception {
+    var owner = userRepository.save(new UserEntity("owner-remove@example.com", "owner-remove", "Owner", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    var member = userRepository.save(new UserEntity("remove-member@example.com", "remove-member", "Remove Member", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    String token = jwtService.createToken(owner.getEmail());
+    String teamId = createTeam(token);
+
+    mockMvc.perform(post("/api/teams/" + teamId + "/members")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"lookup\":\"remove-member\"}"))
+      .andExpect(status().isOk());
+
+    mockMvc.perform(delete("/api/teams/" + teamId + "/members/" + member.getId())
+        .header("Authorization", "Bearer " + token))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.members.length()").value(1))
+      .andExpect(jsonPath("$.members[0].username").value("owner-remove"));
   }
 
   @Test

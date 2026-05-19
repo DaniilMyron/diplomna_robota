@@ -1,0 +1,233 @@
+.page {
+  display: grid;
+  gap: 24px;
+}
+
+.headingRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.heading {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 36px);
+  line-height: 1.1;
+}
+
+.backLink {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  text-decoration: none;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  box-shadow: var(--shadow-card);
+}
+
+.panelHeading {
+  margin: 0;
+  font-size: 18px;
+}
+
+.panelHeadingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.headingActions {
+  display: flex;
+  gap: 8px;
+}
+
+.fields {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.fieldRow {
+  display: grid;
+  gap: 4px;
+}
+
+.fieldRow dt {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.fieldRow dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.descriptionBox {
+  min-height: 160px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  white-space: pre-wrap;
+}
+
+.editForm {
+  display: grid;
+  gap: 14px;
+}
+
+.editField {
+  display: grid;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.readonlyId {
+  margin: 0;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.input {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+}
+
+.inputError {
+  border-color: #ef4444;
+  outline-color: #ef4444;
+  background: #fff7f7;
+}
+
+.fieldError {
+  color: var(--danger);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.chat {
+  min-height: 240px;
+  max-height: 52vh;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.comment {
+  max-width: 74ch;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  background: #eef2ff;
+}
+
+.commentMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.commentMeta strong {
+  color: var(--text);
+}
+
+.comment p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.commentForm,
+.commentField {
+  display: grid;
+  gap: 10px;
+}
+
+.commentField {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 88px;
+  resize: vertical;
+  padding: 10px 12px;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 42px;
+  border-radius: 6px;
+  padding: 0 14px;
+}
+
+.primaryButton {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--background);
+}
+
+.secondaryButton {
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.emptyState {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .headingRow,
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .headingRow {
+    display: grid;
+  }
+}

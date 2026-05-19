@@ -30,7 +30,13 @@ export function TeamBoardPage() {
             <h2 className={styles.panelHeading}>Team Members</h2>
             <ul className={styles.members}>
               {team.members.map((member) => (
-                <li className={styles.member} key={member.id}>{member.displayName}</li>
+                <TeamMemberBadge
+                  key={member.id}
+                  member={member}
+                  canManageMembership={team.canManageMembership}
+                  isCurrentUser={member.id === model.currentUserId}
+                  onRemove={model.removeMember}
+                />
               ))}
             </ul>
             {team.canManageMembership ? (
@@ -89,6 +95,66 @@ export function TeamBoardPage() {
   );
 }
 
+function TeamMemberBadge({
+  member,
+  canManageMembership,
+  isCurrentUser,
+  onRemove,
+}: {
+  member: BoardTeamMember;
+  canManageMembership: boolean;
+  isCurrentUser: boolean;
+  onRemove: (userId: string) => Promise<void>;
+}) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const itemRef = React.useRef<HTMLLIElement | null>(null);
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!itemRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', closeOnOutsideClick);
+    return () => document.removeEventListener('mousedown', closeOnOutsideClick);
+  }, [isOpen]);
+
+  if (!canManageMembership || isCurrentUser) {
+    return <li className={styles.member}>{member.displayName}</li>;
+  }
+
+  return (
+    <li className={styles.memberAction} ref={itemRef}>
+      <button
+        className={styles.memberButton}
+        aria-expanded={isOpen}
+        aria-label={`Manage ${member.displayName}`}
+        onClick={() => setIsOpen((current) => !current)}
+      >
+        {member.displayName}
+      </button>
+      {isOpen ? (
+        <div className={styles.memberPopover}>
+          <button
+            className={styles.dangerButton}
+            onClick={() => {
+              setIsOpen(false);
+              void onRemove(member.id);
+            }}
+          >
+            Delete user
+          </button>
+        </div>
+      ) : null}
+    </li>
+  );
+}
+
 function TaskColumn({
   label,
   status,
@@ -108,19 +174,21 @@ function TaskColumn({
       onDrop={(event) => void model.moveTask(event.dataTransfer.getData('text/task-id'), status)}
     >
       <h2 className={styles.columnHeading}>{label}</h2>
-      {tasks.length === 0 ? <p className={styles.emptyColumn}>No tasks in {label}.</p> : tasks.map((task) => <TaskCard key={task.id} task={task} members={model.team?.members ?? []} onUpdate={model.update} onDelete={model.remove} onMove={model.moveTask} />)}
+      {tasks.length === 0 ? <p className={styles.emptyColumn}>No tasks in {label}.</p> : tasks.map((task) => <TaskCard key={task.id} task={task} teamId={model.teamId} members={model.team?.members ?? []} onUpdate={model.update} onDelete={model.remove} onMove={model.moveTask} />)}
     </section>
   );
 }
 
 function TaskCard({
   task,
+  teamId,
   members,
   onUpdate,
   onDelete,
   onMove,
 }: {
   task: Task;
+  teamId: string;
   members: BoardTeamMember[];
   onUpdate: (taskId: string, input: { title: string; description?: string; assigneeId?: string; status: TaskStatus }) => Promise<void>;
   onDelete: (taskId: string) => Promise<void>;
@@ -161,7 +229,7 @@ function TaskCard({
   return (
     <article className={styles.card} draggable onDragStart={(event) => event.dataTransfer.setData('text/task-id', task.id)}>
       <AssigneeAvatar assignee={task.assignee} />
-      <strong className={styles.cardTitle}>{task.title}</strong>
+      <Link className={styles.cardTitle} to={`/teams/${teamId}/tasks/${task.id}`}>{task.title}</Link>
       {task.assignee ? <p className={styles.assignee}>{task.assignee.displayName}</p> : null}
       <div className={styles.actions}>
         {taskStatuses

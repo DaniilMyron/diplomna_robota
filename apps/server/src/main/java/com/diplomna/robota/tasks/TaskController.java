@@ -1,6 +1,8 @@
 package com.diplomna.robota.tasks;
 
+import com.diplomna.robota.tasks.TaskDtos.CreateTaskCommentRequest;
 import com.diplomna.robota.tasks.TaskDtos.CreateTaskRequest;
+import com.diplomna.robota.tasks.TaskDtos.TaskCommentResponse;
 import com.diplomna.robota.tasks.TaskDtos.TaskResponse;
 import com.diplomna.robota.tasks.TaskDtos.UpdateTaskRequest;
 import com.diplomna.robota.tasks.TaskDtos.UpdateTaskStatusRequest;
@@ -33,6 +35,11 @@ public class TaskController {
     return taskService.listForMember(teamId, principal.getName());
   }
 
+  @GetMapping("/{taskId}")
+  public TaskResponse get(Principal principal, @PathVariable UUID teamId, @PathVariable UUID taskId) {
+    return taskService.getForMember(teamId, taskId, principal.getName());
+  }
+
   @PostMapping
   public TaskResponse create(Principal principal, @PathVariable UUID teamId, @Valid @RequestBody CreateTaskRequest request) {
     return taskService.createForMember(teamId, principal.getName(), request.title(), request.description(), request.assigneeId());
@@ -56,5 +63,19 @@ public class TaskController {
       @PathVariable UUID taskId,
       @Valid @RequestBody UpdateTaskStatusRequest request) {
     return taskService.updateStatusForMember(teamId, taskId, principal.getName(), request.status());
+  }
+
+  @GetMapping("/{taskId}/comments")
+  public List<TaskCommentResponse> listComments(Principal principal, @PathVariable UUID teamId, @PathVariable UUID taskId) {
+    return taskService.listCommentsForMember(teamId, taskId, principal.getName());
+  }
+
+  @PostMapping("/{taskId}/comments")
+  public TaskCommentResponse addComment(
+      Principal principal,
+      @PathVariable UUID teamId,
+      @PathVariable UUID taskId,
+      @Valid @RequestBody CreateTaskCommentRequest request) {
+    return taskService.addCommentForMember(teamId, taskId, principal.getName(), request.body());
   }
 }

@@ -18,3 +18,12 @@ export function addBoardTeamMember(token: string, teamId: string, lookup: string
     body: JSON.stringify({ lookup }),
   });
 }
+
+export function removeBoardTeamMember(token: string, teamId: string, userId: string) {
+  return request<BoardTeam>(`/teams/${teamId}/members/${userId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}

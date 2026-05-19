@@ -196,6 +196,35 @@ class TaskControllerTest {
   }
 
   @Test
+  void teamMemberCanChatInTaskComments() throws Exception {
+    var member = saveUser("commenter@example.com", "commenter", "Commenter");
+    var team = saveTeam("Platform", member);
+    String token = jwtService.createToken(member.getEmail());
+
+    String createdTask = mockMvc.perform(post("/api/teams/" + team.getId() + "/tasks")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"title\":\"Discuss me\"}"))
+      .andReturn().getResponse().getContentAsString();
+    String taskId = createdTask.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+
+    mockMvc.perform(post("/api/teams/" + team.getId() + "/tasks/" + taskId + "/comments")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"body\":\"I left a note\"}"))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.body").value("I left a note"))
+      .andExpect(jsonPath("$.author.username").value("commenter"))
+      .andExpect(jsonPath("$.createdAt").exists());
+
+    mockMvc.perform(get("/api/teams/" + team.getId() + "/tasks/" + taskId + "/comments")
+        .header("Authorization", "Bearer " + token))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$[0].body").value("I left a note"))
+      .andExpect(jsonPath("$[0].author.displayName").value("Commenter"));
+  }
+
+  @Test
   void teamMemberCannotMoveTaskFromAnotherTeam() throws Exception {
     var firstMember = saveUser("first@example.com", "first", "First");
     var secondMember = saveUser("second@example.com", "second", "Second");

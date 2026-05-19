@@ -1,6 +1,7 @@
 package com.diplomna.robota.tasks;
 
 import com.diplomna.robota.tasks.TaskDtos.TaskResponse;
+import com.diplomna.robota.tasks.TaskDtos.TaskCommentResponse;
 import com.diplomna.robota.teams.TeamMemberRepository;
 import com.diplomna.robota.teams.TeamRepository;
 import com.diplomna.robota.users.UserEntity;
@@ -15,12 +16,14 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class TaskService {
   private final TaskRepository taskRepository;
+  private final TaskCommentRepository taskCommentRepository;
   private final TeamRepository teamRepository;
   private final TeamMemberRepository teamMemberRepository;
   private final UserRepository userRepository;
 
-  public TaskService(TaskRepository taskRepository, TeamRepository teamRepository, TeamMemberRepository teamMemberRepository, UserRepository userRepository) {
+  public TaskService(TaskRepository taskRepository, TaskCommentRepository taskCommentRepository, TeamRepository teamRepository, TeamMemberRepository teamMemberRepository, UserRepository userRepository) {
     this.taskRepository = taskRepository;
+    this.taskCommentRepository = taskCommentRepository;
     this.teamRepository = teamRepository;
     this.teamMemberRepository = teamMemberRepository;
     this.userRepository = userRepository;
@@ -31,6 +34,11 @@ public class TaskService {
     return taskRepository.findAllByTeamIdOrderByCreatedAtAsc(teamId).stream()
       .map(TaskResponse::from)
       .toList();
+  }
+
+  public TaskResponse getForMember(UUID teamId, UUID taskId, String email) {
+    requireMember(teamId, email);
+    return TaskResponse.from(findTeamTask(teamId, taskId));
   }
 
   @Transactional
@@ -55,9 +63,24 @@ public class TaskService {
   @Transactional
   public void deleteForMember(UUID teamId, UUID taskId, String email) {
     requireMember(teamId, email);
-    var task = taskRepository.findByIdAndTeamId(taskId, teamId)
-      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+    var task = findTeamTask(teamId, taskId);
     taskRepository.delete(task);
+  }
+
+  public List<TaskCommentResponse> listCommentsForMember(UUID teamId, UUID taskId, String email) {
+    requireMember(teamId, email);
+    var task = findTeamTask(teamId, taskId);
+    return taskCommentRepository.findAllByTaskIdOrderByCreatedAtAsc(task.getId()).stream()
+      .map(TaskCommentResponse::from)
+      .toList();
+  }
+
+  @Transactional
+  public TaskCommentResponse addCommentForMember(UUID teamId, UUID taskId, String email, String body) {
+    requireMember(teamId, email);
+    var task = findTeamTask(teamId, taskId);
+    var author = userRepository.findByEmail(email).orElseThrow();
+    return TaskCommentResponse.from(taskCommentRepository.save(new TaskCommentEntity(body, task, author)));
   }
 
   private void requireMember(UUID teamId, String email) {
@@ -69,10 +92,14 @@ public class TaskService {
   @Transactional
   public TaskResponse updateStatusForMember(UUID teamId, UUID taskId, String email, TaskStatus status) {
     requireMember(teamId, email);
-    var task = taskRepository.findByIdAndTeamId(taskId, teamId)
-      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+    var task = findTeamTask(teamId, taskId);
     task.moveTo(status);
     return TaskResponse.from(task);
+  }
+
+  private TaskEntity findTeamTask(UUID teamId, UUID taskId) {
+    return taskRepository.findByIdAndTeamId(taskId, teamId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
   }
 
   private UserEntity resolveAssignee(UUID teamId, UUID assigneeId) {

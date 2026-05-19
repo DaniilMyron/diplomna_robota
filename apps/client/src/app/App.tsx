@@ -1,6 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthPage, AuthProvider, RequireAuth } from '@/modules/auth';
-import { TeamBoardPage } from '@/modules/board';
+import { TaskDetailPage, TeamBoardPage } from '@/modules/board';
 import { AppShell } from '@/modules/shared/layout/app-shell/AppShell';
 import { MyTeamsPage } from '@/modules/teams';
 
@@ -19,6 +19,7 @@ export function App() {
           >
             <Route path="/" element={<MyTeamsPage />} />
             <Route path="/teams/:teamId/board" element={<TeamBoardPage />} />
+            <Route path="/teams/:teamId/tasks/:taskId" element={<TaskDetailPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
