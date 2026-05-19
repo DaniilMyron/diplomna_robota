@@ -1,0 +1,83 @@
+.page {
+  display: grid;
+  gap: 24px;
+}
+
+.headingRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.heading {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 36px);
+  line-height: 1.1;
+}
+
+.subheading {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+}
+
+.taskList {
+  min-height: 220px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  box-shadow: var(--shadow-card);
+}
+
+.groups {
+  display: grid;
+  gap: 22px;
+}
+
+.teamGroup {
+  display: grid;
+  gap: 12px;
+}
+
+.teamLink {
+  width: fit-content;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.teamLink:hover,
+.taskLink:hover {
+  color: var(--accent);
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  margin: 0;
+  border: 0;
+  background: var(--border);
+}
+
+.tasks {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.taskLink {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.emptyState {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  color: var(--text-muted);
+}

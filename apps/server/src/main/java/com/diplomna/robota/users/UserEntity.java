@@ -17,7 +17,7 @@ public class UserEntity extends BaseEntity {
   @Column(nullable = false)
   private String displayName;
 
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "text")
   private String avatarUrl;
 
   @Column(nullable = false)
@@ -38,4 +38,9 @@ public class UserEntity extends BaseEntity {
   public String getDisplayName() { return displayName; }
   public String getAvatarUrl() { return avatarUrl; }
   public String getPasswordHash() { return passwordHash; }
+
+  public void updateProfile(String displayName, String avatarUrl) {
+    this.displayName = displayName;
+    this.avatarUrl = avatarUrl;
+  }
 }

@@ -28,6 +28,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
         localStorage.removeItem(STORAGE_KEY);
         setSession(null);
       },
+      updateUser: (updatedUser: User) => {
+        if (!token) {
+          return;
+        }
+
+        const updatedSession = { token, user: updatedUser };
+        storeSession(updatedSession);
+        setSession(updatedSession);
+      },
     }),
     [token, user],
   );

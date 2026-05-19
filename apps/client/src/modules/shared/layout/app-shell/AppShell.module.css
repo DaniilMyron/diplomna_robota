@@ -1,8 +1,6 @@
 .shell {
   min-height: 100vh;
-  background:
-    linear-gradient(180deg, #f8fafc 0, #ffffff 220px),
-    var(--background);
+  background: var(--shell-background);
 }
 
 .header {
@@ -15,7 +13,7 @@
   min-height: 72px;
   padding: 0 clamp(18px, 4vw, 40px);
   border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--header-background);
   backdrop-filter: blur(14px);
 }
 
@@ -118,6 +116,21 @@
   margin-left: auto;
 }
 
+.accountMenu {
+  position: relative;
+}
+
+.avatarButton {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+}
+
 .avatar {
   width: 38px;
   height: 38px;
@@ -136,6 +149,34 @@
   background: var(--surface-muted);
   font-size: 13px;
   font-weight: 700;
+}
+
+.accountPanel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 180px;
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  box-shadow: var(--shadow-card);
+}
+
+.accountLink {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.accountLink:hover {
+  background: var(--surface);
 }
 
 .logoutButton {

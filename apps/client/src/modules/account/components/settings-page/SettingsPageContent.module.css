@@ -1,0 +1,82 @@
+.page {
+  display: grid;
+  gap: 24px;
+  justify-items: center;
+}
+
+.page header {
+  width: min(620px, 100%);
+}
+
+.heading {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 36px);
+  line-height: 1.1;
+}
+
+.panel {
+  width: min(620px, 100%);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  box-shadow: var(--shadow-card);
+}
+
+.group {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.group:last-child {
+  border-bottom: 0;
+}
+
+.groupHeading {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.settingRow {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--text);
+}
+
+.switchInput {
+  width: 46px;
+  height: 26px;
+  appearance: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-strong);
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.switchInput::before {
+  width: 20px;
+  height: 20px;
+  display: block;
+  margin: 2px;
+  border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--shadow-card);
+  content: "";
+  transition: transform 160ms ease;
+}
+
+.switchInput:checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.switchInput:checked::before {
+  transform: translateX(20px);
+}

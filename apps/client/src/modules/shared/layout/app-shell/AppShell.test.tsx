@@ -53,6 +53,31 @@ test('an authenticated user sees accessible boards grouped by team and can navig
   expect(screen.queryByRole('link', { name: 'Platform Board' })).not.toBeInTheDocument();
 });
 
+test('an authenticated user can navigate to their tasks from the header', () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    }),
+  );
+
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<CurrentPath />} />
+          <Route path="/tasks" element={<CurrentPath />} />
+        </Route>
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  fireEvent.click(screen.getByRole('link', { name: 'My Tasks' }));
+
+  expect(screen.getByText('/tasks')).toBeInTheDocument();
+});
+
 test('the boards menu closes when the user clicks outside it', async () => {
   vi.stubGlobal(
     'fetch',
@@ -78,6 +103,68 @@ test('the boards menu closes when the user clicks outside it', async () => {
   fireEvent.mouseDown(document.body);
 
   await waitFor(() => expect(screen.queryByRole('link', { name: 'Platform Board' })).not.toBeInTheDocument());
+});
+
+test('the account menu opens from the avatar, navigates, and closes outside', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    }),
+  );
+
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<CurrentPath />} />
+          <Route path="/profile" element={<CurrentPath />} />
+        </Route>
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  fireEvent.click(screen.getByRole('button', { name: 'Open account menu' }));
+
+  expect(screen.getByRole('link', { name: 'Profile' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument();
+
+  fireEvent.mouseDown(document.body);
+
+  await waitFor(() => expect(screen.queryByRole('link', { name: 'Profile' })).not.toBeInTheDocument());
+
+  fireEvent.click(screen.getByRole('button', { name: 'Open account menu' }));
+  fireEvent.click(screen.getByRole('link', { name: 'Profile' }));
+
+  expect(screen.getByText('/profile')).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Profile' })).not.toBeInTheDocument();
+});
+
+test('the account menu can navigate to settings', () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    }),
+  );
+
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<CurrentPath />} />
+          <Route path="/settings" element={<CurrentPath />} />
+        </Route>
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  fireEvent.click(screen.getByRole('button', { name: 'Open account menu' }));
+  fireEvent.click(screen.getByRole('link', { name: 'Settings' }));
+
+  expect(screen.getByText('/settings')).toBeInTheDocument();
 });
 
 test('the boards menu refreshes when teams change elsewhere in the shell', async () => {

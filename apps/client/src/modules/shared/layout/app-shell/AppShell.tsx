@@ -9,8 +9,10 @@ export function AppShell() {
   const navigate = useNavigate();
   const [teams, setTeams] = useState<Team[]>([]);
   const [boardsOpen, setBoardsOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
   const boardsMenuRef = useRef<HTMLDivElement>(null);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
 
   const refreshTeams = useCallback(() => {
     if (!token) {
@@ -45,12 +47,27 @@ export function AppShell() {
     return () => document.removeEventListener('mousedown', closeBoardsMenu);
   }, []);
 
+  useEffect(() => {
+    function closeAccountMenu(event: MouseEvent) {
+      if (accountMenuRef.current?.contains(event.target as Node)) {
+        return;
+      }
+
+      setAccountOpen(false);
+    }
+
+    document.addEventListener('mousedown', closeAccountMenu);
+
+    return () => document.removeEventListener('mousedown', closeAccountMenu);
+  }, []);
+
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
         <Link className={styles.brand} to="/">Team Task Manager</Link>
         <nav className={styles.nav} aria-label="Primary navigation">
           <Link className={styles.homeLink} to="/">My Teams</Link>
+          <Link className={styles.homeLink} to="/tasks">My Tasks</Link>
           {user ? (
             <div className={styles.boardsMenu} ref={boardsMenuRef}>
               <button
@@ -85,20 +102,41 @@ export function AppShell() {
         </nav>
         {user ? (
           <div className={styles.account}>
-            {avatarFailed ? (
-              <span className={styles.avatarFallback} aria-label={user.displayName}>
-                {getInitials(user.displayName)}
-              </span>
-            ) : (
-              <img
-                className={styles.avatar}
-                alt={user.displayName}
-                src={user.avatarUrl}
-                width="38"
-                height="38"
-                onError={() => setAvatarFailed(true)}
-              />
-            )}
+            <div className={styles.accountMenu} ref={accountMenuRef}>
+              <button
+                className={styles.avatarButton}
+                type="button"
+                aria-label="Open account menu"
+                aria-expanded={accountOpen}
+                aria-haspopup="menu"
+                onClick={() => setAccountOpen((current) => !current)}
+              >
+                {avatarFailed ? (
+                  <span className={styles.avatarFallback} aria-label={user.displayName}>
+                    {getInitials(user.displayName)}
+                  </span>
+                ) : (
+                  <img
+                    className={styles.avatar}
+                    alt={user.displayName}
+                    src={user.avatarUrl}
+                    width="38"
+                    height="38"
+                    onError={() => setAvatarFailed(true)}
+                  />
+                )}
+              </button>
+              {accountOpen ? (
+                <div className={styles.accountPanel} role="menu">
+                  <Link className={styles.accountLink} to="/profile" onClick={() => setAccountOpen(false)}>
+                    Profile
+                  </Link>
+                  <Link className={styles.accountLink} to="/settings" onClick={() => setAccountOpen(false)}>
+                    Settings
+                  </Link>
+                </div>
+              ) : null}
+            </div>
             <button
               className={styles.logoutButton}
               onClick={() => {
