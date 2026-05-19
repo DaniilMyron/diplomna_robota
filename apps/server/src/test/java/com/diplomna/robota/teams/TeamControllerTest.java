@@ -47,6 +47,25 @@ class TeamControllerTest {
   }
 
   @Test
+  void ownerCannotCreateTwoTeamsWithTheSameName() throws Exception {
+    var user = userRepository.save(new UserEntity("duplicate-team@example.com", "duplicate-team", "Owner", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    String token = jwtService.createToken(user.getEmail());
+
+    mockMvc.perform(post("/api/teams")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"name\":\"Platform\"}"))
+      .andExpect(status().isOk());
+
+    mockMvc.perform(post("/api/teams")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"name\":\"Platform\"}"))
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.code").value("TEAM_ALREADY_EXISTS"));
+  }
+
+  @Test
   void teamMemberCanOpenBoardTeamDetail() throws Exception {
     var user = userRepository.save(new UserEntity("member@example.com", "member", "Member", "/avatars/default.png", passwordEncoder.encode("secret123")));
     String token = jwtService.createToken(user.getEmail());

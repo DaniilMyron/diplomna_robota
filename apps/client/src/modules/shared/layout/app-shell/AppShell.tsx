@@ -28,6 +28,10 @@ export function AppShell() {
   }, [refreshTeams]);
 
   useEffect(() => {
+    setAvatarFailed(false);
+  }, [user?.avatarUrl]);
+
+  useEffect(() => {
     window.addEventListener('teams:changed', refreshTeams);
 
     return () => window.removeEventListener('teams:changed', refreshTeams);
@@ -111,7 +115,7 @@ export function AppShell() {
                 aria-haspopup="menu"
                 onClick={() => setAccountOpen((current) => !current)}
               >
-                {avatarFailed ? (
+                {avatarFailed || !user.avatarUrl ? (
                   <span className={styles.avatarFallback} aria-label={user.displayName}>
                     {getInitials(user.displayName)}
                   </span>
@@ -123,6 +127,7 @@ export function AppShell() {
                     width="38"
                     height="38"
                     onError={() => setAvatarFailed(true)}
+                    onLoad={() => setAvatarFailed(false)}
                   />
                 )}
               </button>

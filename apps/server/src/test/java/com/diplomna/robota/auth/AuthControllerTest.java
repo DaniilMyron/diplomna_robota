@@ -35,6 +35,13 @@ class AuthControllerTest {
   }
 
   @Test
+  void invalidBearerTokenReturnsUnauthorized() throws Exception {
+    mockMvc.perform(get("/api/users/me").header("Authorization", "Bearer not-a-token"))
+      .andExpect(status().isUnauthorized())
+      .andExpect(jsonPath("$.code").value("AUTH_INVALID_TOKEN"));
+  }
+
+  @Test
   void invalidRegistrationReturnsBadRequest() throws Exception {
     String body = """
       {"email":"not-an-email","username":"","displayName":"","password":""}

@@ -96,3 +96,15 @@ test('a user sees an empty state when no tasks are assigned to them', async () =
   expect(await screen.findByText('No tasks assigned to you')).toBeInTheDocument();
   expect(screen.queryByText('Unassigned task')).not.toBeInTheDocument();
 });
+
+test('a user sees an empty state when assigned tasks cannot be loaded', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockRejectedValueOnce(new Error('Network error')),
+  );
+
+  renderMyTasks();
+
+  expect(await screen.findByText('No tasks assigned to you')).toBeInTheDocument();
+  expect(screen.queryByText('Loading tasks...')).not.toBeInTheDocument();
+});

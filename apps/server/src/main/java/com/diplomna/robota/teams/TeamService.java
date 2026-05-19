@@ -35,8 +35,13 @@ public class TeamService {
 
   @Transactional
   public TeamResponse createFor(String email, String name) {
+    var normalizedName = name.trim();
+    if (teamRepository.existsByOwnerEmailAndName(email, normalizedName)) {
+      throw new TeamAlreadyExistsException();
+    }
+
     var owner = userRepository.findByEmail(email).orElseThrow();
-    var team = teamRepository.save(new TeamEntity(name, owner));
+    var team = teamRepository.save(new TeamEntity(normalizedName, owner));
     teamMemberRepository.save(new TeamMemberEntity(team, owner, "OWNER"));
     return TeamResponse.from(team, teamMemberRepository.findAllByTeamIdOrderByCreatedAtAsc(team.getId()), true);
   }

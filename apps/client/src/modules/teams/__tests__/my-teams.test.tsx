@@ -27,3 +27,25 @@ test('a logged-in user sees an empty state and can create a team', async () => {
   expect(await screen.findByText('Platform')).toBeInTheDocument();
   await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
 });
+
+test('a logged-in user sees a duplicate team name error', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => [{ id: 'team-1', name: 'Platform' }] })
+      .mockResolvedValueOnce({ ok: false, json: async () => ({ code: 'TEAM_ALREADY_EXISTS' }) }),
+  );
+
+  render(
+    <MemoryRouter>
+      <MyTeamsPage />
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByText('Platform')).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Team name'), { target: { value: 'Platform' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Create team' }));
+
+  expect(await screen.findByText('A team with this name already exists.')).toBeInTheDocument();
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+});

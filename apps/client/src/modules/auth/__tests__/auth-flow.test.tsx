@@ -117,6 +117,20 @@ test('registration shows a form error when the server rejects the request', asyn
 });
 
 test('a returning user stays authenticated after a page reload', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'user-1',
+        email: 'user@example.com',
+        username: 'dmyrosh',
+        displayName: 'Dmytro',
+        avatarUrl: '/avatar.png',
+      }),
+    }),
+  );
+
   localStorage.setItem(
     'team-task-manager-auth',
     JSON.stringify({
@@ -149,7 +163,52 @@ test('a returning user stays authenticated after a page reload', async () => {
     </MemoryRouter>,
   );
 
-  expect(screen.getByText('Dmytro')).toBeInTheDocument();
+  expect(await screen.findByText('Dmytro')).toBeInTheDocument();
+});
+
+test('a returning user with an invalid token is sent back to auth', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ code: 'AUTH_INVALID_TOKEN' }),
+    }),
+  );
+
+  localStorage.setItem(
+    'team-task-manager-auth',
+    JSON.stringify({
+      token: 'expired-token',
+      user: {
+        id: 'user-1',
+        email: 'user@example.com',
+        username: 'dmyrosh',
+        displayName: 'Dmytro',
+        avatarUrl: '/avatar.png',
+      },
+    }),
+  );
+
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <AuthProvider>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <AuthenticatedState />
+              </RequireAuth>
+            }
+          />
+          <Route path="/auth" element={<p>Auth page</p>} />
+        </Routes>
+      </AuthProvider>
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByText('Auth page')).toBeInTheDocument();
 });
 
 function AuthenticatedState() {

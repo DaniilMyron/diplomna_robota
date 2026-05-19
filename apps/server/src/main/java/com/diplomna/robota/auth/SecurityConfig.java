@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import io.jsonwebtoken.JwtException;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
@@ -49,10 +50,18 @@ public class SecurityConfig {
       throws ServletException, IOException {
       String header = request.getHeader("Authorization");
       if (header != null && header.startsWith("Bearer ")) {
-        String email = jwtService.parseSubject(header.substring(7));
-        SecurityContextHolder.getContext().setAuthentication(
-          new UsernamePasswordAuthenticationToken(email, null, List.of())
-        );
+        try {
+          String email = jwtService.parseSubject(header.substring(7));
+          SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(email, null, List.of())
+          );
+        } catch (JwtException | IllegalArgumentException exception) {
+          SecurityContextHolder.clearContext();
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+          response.setContentType("application/json");
+          response.getWriter().write("{\"code\":\"AUTH_INVALID_TOKEN\"}");
+          return;
+        }
       }
       filterChain.doFilter(request, response);
     }

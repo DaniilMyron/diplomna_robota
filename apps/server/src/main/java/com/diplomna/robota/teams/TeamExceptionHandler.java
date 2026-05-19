@@ -22,5 +22,10 @@ public class TeamExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("TEAM_MEMBER_ALREADY_EXISTS"));
   }
 
+  @ExceptionHandler(TeamAlreadyExistsException.class)
+  ResponseEntity<ErrorResponse> teamAlreadyExists() {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("TEAM_ALREADY_EXISTS"));
+  }
+
   private record ErrorResponse(String code) {}
 }

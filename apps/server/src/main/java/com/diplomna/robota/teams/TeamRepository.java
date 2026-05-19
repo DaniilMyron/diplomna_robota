@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TeamRepository extends JpaRepository<TeamEntity, UUID> {
   List<TeamEntity> findAllByOwnerEmail(String email);
+  boolean existsByOwnerEmailAndName(String email, String name);
 }

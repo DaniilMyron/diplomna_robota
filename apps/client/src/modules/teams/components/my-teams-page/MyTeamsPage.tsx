@@ -41,7 +41,10 @@ export function MyTeamsPage() {
               onChange={(event) => model.setName(event.target.value)}
             />
           </label>
-          <button className={styles.button} onClick={() => void model.create()}>Create team</button>
+          <button className={styles.button} disabled={model.isCreating} onClick={() => void model.create()}>
+            {model.isCreating ? 'Creating...' : 'Create team'}
+          </button>
+          {model.error ? <p className={styles.error}>{model.error}</p> : null}
         </section>
       </div>
     </section>

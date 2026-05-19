@@ -26,18 +26,27 @@ export function useMyTasksPage() {
         return;
       }
 
-      setIsLoading(true);
-      const nextTeams = await listTeams(token);
-      const tasksByTeam = await Promise.all(
-        nextTeams.map(async (team) => ({
-          ...team,
-          tasks: (await listTasks(token, team.id)).filter((task) => task.assignee?.id === userId),
-        })),
-      );
+      try {
+        setIsLoading(true);
+        const nextTeams = await listTeams(token);
+        const tasksByTeam = await Promise.all(
+          nextTeams.map(async (team) => ({
+            ...team,
+            tasks: (await listTasks(token, team.id)).filter((task) => task.assignee?.id === userId),
+          })),
+        );
 
-      if (isCurrent) {
-        setTeams(tasksByTeam.filter((team) => team.tasks.length > 0));
-        setIsLoading(false);
+        if (isCurrent) {
+          setTeams(tasksByTeam.filter((team) => team.tasks.length > 0));
+        }
+      } catch {
+        if (isCurrent) {
+          setTeams([]);
+        }
+      } finally {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
       }
     }
 

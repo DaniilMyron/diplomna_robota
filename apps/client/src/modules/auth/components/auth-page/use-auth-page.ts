@@ -111,6 +111,10 @@ export function useAuthPage() {
           setFieldErrors({ username: 'Username is already taken' });
           return;
         }
+        if (error instanceof HttpError && error.code === 'NETWORK_ERROR') {
+          setFormError('Server is not reachable. Start the backend and try again.');
+          return;
+        }
         setFormError(mode === 'register'
           ? 'Registration failed. Check your details and try again.'
           : 'Login failed. Check your email and password.');

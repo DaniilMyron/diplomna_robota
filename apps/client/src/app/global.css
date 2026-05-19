@@ -11,6 +11,8 @@
   --success: #16a34a;
   --warning: #f59e0b;
   --danger: #dc2626;
+  --danger-background: #fef2f2;
+  --danger-border: #fecaca;
   --shell-background: linear-gradient(180deg, #f8fafc 0, #ffffff 220px), var(--background);
   --header-background: rgba(255, 255, 255, 0.92);
   --member-surface: #fbfcff;
@@ -47,6 +49,9 @@
   --border: #485160;
   --accent: #7aa2ff;
   --accent-strong: #9bb9ff;
+  --danger: #ff8b8b;
+  --danger-background: #2a171b;
+  --danger-border: #6f2c35;
   --shell-background: var(--background);
   --header-background: rgba(15, 17, 21, 0.94);
   --member-surface: var(--surface);
