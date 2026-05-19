@@ -104,6 +104,37 @@ class TeamControllerTest {
   }
 
   @Test
+  void removingMemberClearsTheirTaskAssignments() throws Exception {
+    var owner = userRepository.save(new UserEntity("owner-clear@example.com", "owner-clear", "Owner", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    var member = userRepository.save(new UserEntity("clear-member@example.com", "clear-member", "Clear Member", "/avatars/default.png", passwordEncoder.encode("secret123")));
+    String token = jwtService.createToken(owner.getEmail());
+    String teamId = createTeam(token);
+
+    mockMvc.perform(post("/api/teams/" + teamId + "/members")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"lookup\":\"clear-member\"}"))
+      .andExpect(status().isOk());
+
+    mockMvc.perform(post("/api/teams/" + teamId + "/tasks")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"title\":\"Keep unassigned\",\"assigneeId\":\"" + member.getId() + "\"}"))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.assignee.username").value("clear-member"));
+
+    mockMvc.perform(delete("/api/teams/" + teamId + "/members/" + member.getId())
+        .header("Authorization", "Bearer " + token))
+      .andExpect(status().isOk());
+
+    mockMvc.perform(get("/api/teams/" + teamId + "/tasks")
+        .header("Authorization", "Bearer " + token))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$[0].title").value("Keep unassigned"))
+      .andExpect(jsonPath("$[0].assignee").doesNotExist());
+  }
+
+  @Test
   void addMemberReturnsConflictWhenUserIsAlreadyInTeam() throws Exception {
     var owner = userRepository.save(new UserEntity("owner-duplicate@example.com", "owner-duplicate", "Owner", "/avatars/default.png", passwordEncoder.encode("secret123")));
     String token = jwtService.createToken(owner.getEmail());

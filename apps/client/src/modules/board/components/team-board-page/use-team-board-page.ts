@@ -75,6 +75,9 @@ export function useTeamBoardPage() {
       }
       const updatedTeam = await removeBoardTeamMember(token, teamId, userId);
       setTeam(updatedTeam);
+      setTasks((current) => current.map((task) => (
+        task.assignee?.id === userId ? { ...task, assignee: null } : task
+      )));
       setMemberLookupError(null);
       setMemberNotice(null);
     },

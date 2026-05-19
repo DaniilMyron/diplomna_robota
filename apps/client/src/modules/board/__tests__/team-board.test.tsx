@@ -58,7 +58,13 @@ test('a team owner can add a member inline from the board', async () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => [],
+        json: async () => [{
+          id: 'task-1',
+          title: 'Assigned task',
+          description: null,
+          status: 'TODO',
+          assignee: { id: 'user-2', username: 'member', displayName: 'Member', avatarUrl: '/avatars/default.png' },
+        }],
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -100,7 +106,13 @@ test('a team owner can remove a member from the board popover', async () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => [],
+        json: async () => [{
+          id: 'task-1',
+          title: 'Assigned task',
+          description: null,
+          status: 'TODO',
+          assignee: { id: 'user-2', username: 'member', displayName: 'Member', avatarUrl: '/avatars/default.png' },
+        }],
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -114,11 +126,14 @@ test('a team owner can remove a member from the board popover', async () => {
   );
 
   renderBoard();
-  expect(await screen.findByText('Member')).toBeInTheDocument();
+  expect(await screen.findByText('Assigned task')).toBeInTheDocument();
+  expect(screen.getAllByText('Member').length).toBeGreaterThan(0);
   fireEvent.click(screen.getByRole('button', { name: 'Manage Member' }));
   fireEvent.click(screen.getByRole('button', { name: 'Delete user' }));
 
-  await waitFor(() => expect(screen.queryByText('Member')).not.toBeInTheDocument());
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Manage Member' })).not.toBeInTheDocument());
+  expect(screen.queryByText('Member')).not.toBeInTheDocument();
+  expect(screen.getByLabelText('Unassigned')).toBeInTheDocument();
   await waitFor(() =>
     expect(fetch).toHaveBeenLastCalledWith(
       '/api/teams/team-1/members/user-2',

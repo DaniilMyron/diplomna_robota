@@ -1,5 +1,6 @@
 package com.diplomna.robota.teams;
 
+import com.diplomna.robota.tasks.TaskRepository;
 import com.diplomna.robota.teams.TeamDtos.TeamResponse;
 import com.diplomna.robota.users.UserRepository;
 import java.util.List;
@@ -11,11 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class TeamService {
   private final TeamRepository teamRepository;
   private final TeamMemberRepository teamMemberRepository;
+  private final TaskRepository taskRepository;
   private final UserRepository userRepository;
 
-  public TeamService(TeamRepository teamRepository, TeamMemberRepository teamMemberRepository, UserRepository userRepository) {
+  public TeamService(TeamRepository teamRepository, TeamMemberRepository teamMemberRepository, TaskRepository taskRepository, UserRepository userRepository) {
     this.teamRepository = teamRepository;
     this.teamMemberRepository = teamMemberRepository;
+    this.taskRepository = taskRepository;
     this.userRepository = userRepository;
   }
 
@@ -77,6 +80,7 @@ public class TeamService {
 
     var member = teamMemberRepository.findByTeamIdAndUserId(teamId, userId)
       .orElseThrow(TeamMemberNotFoundException::new);
+    taskRepository.clearAssigneeForTeamMember(teamId, userId);
     teamMemberRepository.delete(member);
 
     return TeamResponse.from(team, teamMemberRepository.findAllByTeamIdOrderByCreatedAtAsc(teamId), true);
