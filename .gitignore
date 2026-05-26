@@ -9,6 +9,7 @@ target
 .DS_Store
 docs/diploma-rules
 docs/generated-diploma
+work
 tools
 
 # Env files - never commit. Use .env.example for templates.

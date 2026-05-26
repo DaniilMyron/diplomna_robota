@@ -9,9 +9,10 @@ description: Generates diploma thesis drafts using the local Odesa Polytech rule
 
 1. Read `docs/diploma-rules/RULES.md`.
 2. Read `docs/diploma-rules/references/README.md`.
-3. Load the `humanizer` skill before generating any connected prose.
-4. Use `docs/diploma-rules/references/skripnikova-reference-thesis.pdf` as the example of the finished document shape.
-5. Generate content that satisfies the rules first; use the reference thesis for composition, pacing, and completeness.
+3. Check the current supervisor remarks in `docs/diploma-rules/sources/remarks-2026-05-23.docx` when revising this diploma.
+4. Load the `humanizer` skill before generating any connected prose.
+5. Use `docs/diploma-rules/references/skripnikova-reference-thesis.pdf` as the example of the finished document shape.
+6. Generate content that satisfies the rules first; use the reference thesis for composition, pacing, and completeness.
 
 ## Priority order
 
@@ -95,6 +96,9 @@ After generating a substantial section or document:
 - `../../../docs/diploma-rules/RULES.md`
 - `../../../docs/diploma-rules/checklist.md`
 - `../../../docs/diploma-rules/sources/`
+- `../../../docs/diploma-rules/sources/remarks-2026-05-23.docx`
+- `../../../docs/diploma-rules/sources/qualification-work-regulation-2025.pdf`
+- `../../../dyploma-rules/`
 - `../../../docs/diploma-rules/references/README.md`
 - `../../../docs/diploma-rules/references/skripnikova-reference-thesis.pdf`
 - `humanizer`
