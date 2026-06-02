@@ -1,4 +1,4 @@
-﻿---
+---
 name: grill-zvit-and-shodennik
 description: Rigorously audit a generated pre-diploma practice report (звіт з практики) and practice diary (щоденник практики) against the Odesa Polytechnic rules in docs/diploma-rules/references/ZVIT-RULES.md and SHODENNYK-RULES.md (text formatting per docs/diploma-rules/RULES.md), and cross-check their content for consistency with the thesis. Use when the user asks to check, verify, validate, "grill", or review a practice report / diary (звіт / щоденник практики) for compliance.
 ---

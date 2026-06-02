@@ -1,4 +1,4 @@
-﻿---
+---
 name: generate-presentation
 description: Generate a defense presentation (.pptx) for a bachelor's/master's qualification work at the Odesa Polytechnic standard — assembled from the existing thesis/ artifacts, conformant to docs/diploma-rules/references/PRESENTATION-RULES.md, and styled after the reference decks. Use when the user asks to generate, build, draft, or scaffold the presentation / slides / захист deck for the diploma.
 ---

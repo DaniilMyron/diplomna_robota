@@ -1,4 +1,4 @@
-﻿---
+---
 name: generate-zvit-and-shodennik
 description: Generate a pre-diploma practice report (звіт з практики, .pdf) and practice diary (щоденник практики, .pdf) for the Odesa Polytechnic standard — content derived from the existing thesis/ artifacts, conformant to docs/diploma-rules/references/ZVIT-RULES.md and SHODENNYK-RULES.md (text formatting per docs/diploma-rules/RULES.md), and styled after the reference Звіт.docx / Щоденник.docx. Use when the user asks to generate, build, draft, or scaffold the practice report / diary (звіт / щоденник практики).
 ---

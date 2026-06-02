@@ -1,4 +1,4 @@
-﻿---
+---
 name: grill-presentation
 description: Rigorously audit a defense presentation (.pptx) against the Odesa Polytechnic presentation rules in docs/diploma-rules/references/PRESENTATION-RULES.md, and cross-check its content verbatim against the thesis. Use when the user asks to check, verify, validate, "grill", or review a defense presentation / slides / захист deck for compliance.
 ---
